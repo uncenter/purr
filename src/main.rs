@@ -161,7 +161,7 @@ enum Queries {
 		#[arg(long = "category")]
 		categories: Option<Vec<String>>,
 
-		#[arg(long)]
+		#[arg(long, num_args = 0..=1, default_missing_value = "true")]
 		icon: Option<String>,
 
 		#[arg(long)]
@@ -296,26 +296,33 @@ fn main() -> Result<()> {
 								}
 							} && {
 								if let Some(icon) = &icon {
-									if let Some(i) = &userstyle.1.icon {
+									let i = &userstyle.1.icon;
+
+									(icon == "true" && i.is_some())
+										|| (icon == "false" && i.is_none()) || (if let Some(i) = i {
 										*icon == *i
 									} else {
 										false
-									}
+									})
 								} else {
 									true
 								}
 							} && {
 								if let Some(color) = &color {
-									*color == userstyle.1.color
+									color
+										.parse()
+										.unwrap_or_else(|_| *color == userstyle.1.color)
 								} else {
 									true
 								}
 							} && {
 								if let Some(app_link) = &app_link {
-									match &userstyle.1.readme.app_link {
-										StringOrStrings::Multiple(l) => l.contains(&app_link),
-										StringOrStrings::Single(l) => *l == *app_link,
-									}
+									app_link.parse().unwrap_or_else(|_| {
+										match &userstyle.1.readme.app_link {
+											StringOrStrings::Multiple(l) => l.contains(&app_link),
+											StringOrStrings::Single(l) => *l == *app_link,
+										}
+									})
 								} else {
 									true
 								}
