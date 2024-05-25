@@ -1,12 +1,12 @@
 [package]
-name = "uu"
+name = "purr"
 version = "0.1.0"
 authors = ["uncenter <uncenter@uncenter.dev>"]
 license = "MIT"
 description = "Utility commands for managing userstyles."
 readme = "README.md"
-homepage = "https://github.com/uncenter/uu"
-repository = "https://github.com/uncenter/uu"
+homepage = "https://github.com/uncenter/purr"
+repository = "https://github.com/uncenter/purr"
 keywords = ["cli"]
 categories = ["command-line-utilities"]
 edition = "2021"

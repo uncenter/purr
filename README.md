@@ -1,17 +1,19 @@
-# uu
+# purr
+
+> **P**ower **U**serstyles **R**eal **R**ealer
 
 Utility commands for managing [catppuccin/userstyles](https://github.com/catppuccin/userstyles). Query data about the repository, the userstyles, and the maintainers, or initialize a new userstyle from the template.
 
 ## Installation
 
 ```sh
-cargo install uu
+cargo install purr
 ```
 
 ## Usage
 
 ```
-Usage: uu <COMMAND>
+Usage: purr <COMMAND>
 
 Commands:
   query
@@ -28,7 +30,7 @@ Options:
 All of the query commands can be used with the `-o`/`--output` flag to change the output format between JSON and plain.
 
 ```
-Usage: uu query [OPTIONS] [COMMAND]
+Usage: purr query [OPTIONS] [COMMAND]
 
 Commands:
   maintained
@@ -46,19 +48,19 @@ Options:
 - List the userstyles.
 
   ```
-  uu query
+  purr query
   ```
 
 - Count the number of userstyles.
 
   ```
-  uu query --count
+  purr query --count
   ```
 
 #### `maintained`
 
 ```
-Usage: uu query maintained [OPTIONS]
+Usage: purr query maintained [OPTIONS]
 
 Options:
       --by <NAME>
@@ -73,55 +75,55 @@ Options:
 - List maintained userstyles.
 
   ```
-  uu query maintained
+  purr query maintained
   ```
 
 - Count the number of maintained userstyles.
 
   ```
-  uu query maintained --count
+  purr query maintained --count
   ```
 
 - List *un*maintained userstyles.
 
   ```
-  uu query maintained --not
+  purr query maintained --not
   ```
 
 - Count the number of *un*maintained userstyles.
 
   ```
-  uu query maintained --not --count
+  purr query maintained --not --count
   ```
 
 - List userstyles maintained by `<username>`.
 
   ```
-  uu query maintained --by "<username>"
+  purr query maintained --by "<username>"
   ```
 
 - Count the number of userstyles maintained by `<username>`.
 
   ```
-  uu query maintained --by "<username>" --count
+  purr query maintained --by "<username>" --count
   ```
 
 - List userstyles _not_ maintained by `<username>`.
 
   ```
-  uu query maintained --by "<username>" --not
+  purr query maintained --by "<username>" --not
   ```
 
 - Count the number of userstyles _not_ maintained by `<username>`.
 
   ```
-  uu query maintained --by "<username>" --not --count
+  purr query maintained --by "<username>" --not --count
   ```
 
 #### `has`
 
 ```
-Usage: uu query has [OPTIONS]
+Usage: purr query has [OPTIONS]
 
 Options:
       --name <NAME>
@@ -141,31 +143,31 @@ Options:
 - Check if userstyles exist with `color` set to `mauve`.
 
   ```
-  uu query has --color mauve
+  purr query has --color mauve
   ```
 
 - List userstyles that have `color` set to `mauve`.
 
   ```
-  uu query has --color mauve --list
+  purr query has --color mauve --list
   ```
 
 - Count the number of userstyles that have `color` set to `mauve`.
 
   ```
-  uu query has --color mauve --count
+  purr query has --color mauve --count
   ```
 
 - Count the number of userstyles that have `color` set to anything other than `mauve`.
 
   ```
-  uu query has --color mauve --not --count
+  purr query has --color mauve --not --count
   ```
 
 - List userstyles that do not have `icon` defined.
 
   ```
-  uu query has --icon --not --list
+  purr query has --icon --not --list
   ```
 
 ### `init`
@@ -173,7 +175,7 @@ Options:
 The `init` command accepts each value (name, categories, etc.) via arguments, though if not provided a series of prompts will be displayed instead.
 
 ```
-Usage: uu init [OPTIONS]
+Usage: purr init [OPTIONS]
 
 Options:
       --name <NAME>
