@@ -114,7 +114,13 @@ struct Cli {
 enum Commands {
 	Query {
 		#[command(subcommand)]
-		command: Queries,
+		command: Option<Queries>,
+
+		#[arg(short, long)]
+		count: bool,
+
+		#[arg(short, long, default_value = "json", name = "FORMAT")]
+		output: OutputFormat,
 	},
 	Init {
 		#[command(subcommand)]
@@ -194,7 +200,11 @@ fn main() -> Result<()> {
 	let args = Cli::parse();
 
 	match args.command {
-		Commands::Query { command } => {
+		Commands::Query {
+			command,
+			count,
+			output,
+		} => {
 			let raw: String = reqwest::blocking::get(
 				"https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml",
 			)?
@@ -202,12 +212,12 @@ fn main() -> Result<()> {
 			let data: Root = serde_yaml::from_str(&raw).unwrap();
 
 			match command {
-				Queries::Maintained {
+				Some(Queries::Maintained {
 					by,
 					not,
 					count,
 					output,
-				} => {
+				}) => {
 					let result = data
 						.userstyles
 						.into_iter()
@@ -235,6 +245,25 @@ fn main() -> Result<()> {
 								matches
 							}
 						})
+						.map(|userstyle| userstyle.0)
+						.collect::<Vec<_>>();
+
+					println!(
+						"{}",
+						match count {
+							true => result.len().to_string(),
+							false => match output {
+								OutputFormat::Json => serde_json::to_string_pretty(&result)
+									.context("Failed to serialize results")?,
+								OutputFormat::Plain => result.join("\n"),
+							},
+						}
+					);
+				}
+				None => {
+					let result = data
+						.userstyles
+						.into_iter()
 						.map(|userstyle| userstyle.0)
 						.collect::<Vec<_>>();
 
