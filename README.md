@@ -6,8 +6,16 @@ Utility commands for managing [catppuccin/userstyles](https://github.com/catppuc
 
 ## Installation
 
+### Cargo
+
 ```sh
-cargo install purr
+cargo install --git https://github.com/uncenter/purr.git
+```
+
+### Nix
+
+```
+nix run github:uncenter/purr
 ```
 
 ## Usage
