@@ -32,6 +32,7 @@ Usage: uu query [OPTIONS] [COMMAND]
 
 Commands:
   maintained
+  has
   help        Print this message or the help of the given subcommand(s)
 
 Options:
@@ -115,6 +116,50 @@ Options:
 
   ```
   uu query maintained --by "<username>" --not --count
+  ```
+
+#### `has`
+
+```
+Usage: uu query has [OPTIONS]
+
+Options:
+      --name <NAME>
+      --category <CATEGORIES>
+      --icon <ICON>
+      --color <COLOR>
+      --app-link <APP_LINK>
+  -c, --count
+  -l, --list
+  -n, --not
+  -o, --output <FORMAT>        [default: json] [possible values: json, plain]
+  -h, --help                   Print help
+```
+
+**Examples**:
+
+- Check if userstyles exist with `color` set to `mauve`.
+
+  ```
+  uu query has --color mauve
+  ```
+
+- List userstyles that have `color` set to `mauve`.
+
+  ```
+  uu query has --color mauve --list
+  ```
+
+- Count the number of userstyles that have `color` set to `mauve`.
+
+  ```
+  uu query has --color mauve --count
+  ```
+
+- Count the number of userstyles that have `color` set to anything other than `mauve`.
+
+  ```
+  uu query has --color mauve --not --count
   ```
 
 ### `init`
