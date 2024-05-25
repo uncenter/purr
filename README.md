@@ -1,6 +1,6 @@
 # uu
 
-Utility commands for managing userstyles. Query data about the repository, the userstyles, and the maintainers, or initialize a new userstyle from the template.
+Utility commands for managing [catppuccin/userstyles](https://github.com/catppuccin/userstyles). Query data about the repository, the userstyles, and the maintainers, or initialize a new userstyle from the template.
 
 ## Installation
 
