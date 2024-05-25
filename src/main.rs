@@ -1,6 +1,5 @@
 use color_eyre::eyre::{bail, Context, Result};
 use convert_case::Casing;
-use regex::Regex;
 use std::{collections::HashMap, env, fs, path::PathBuf};
 use url::Url;
 
@@ -163,30 +162,6 @@ enum OutputFormat {
 	Plain,
 }
 
-fn clean_css_comments(input: &str) -> String {
-	let re = Regex::new(r"/\*([^*]|(\*+[^*/]))*\*+/").unwrap();
-
-	let mut result = String::with_capacity(input.len());
-	let mut last_end = 0;
-
-	for mat in re.find_iter(input) {
-		let start = mat.start();
-		let end = mat.end();
-		let comment = &input[start..end];
-
-		if comment.contains("==UserStyle==") || comment.contains("prettier-ignore") {
-			result.push_str(&input[last_end..end]);
-		} else {
-			result.push_str(&input[last_end..start]);
-		}
-		last_end = end;
-	}
-
-	result.push_str(&input[last_end..]);
-
-	result
-}
-
 fn main() -> Result<()> {
 	color_eyre::install()?;
 	let args = Cli::parse();
@@ -340,7 +315,7 @@ fn main() -> Result<()> {
 				fs::create_dir(&new_directory)?;
 			}
 
-			let template: String = reqwest::blocking::get(
+			let mut template: String = reqwest::blocking::get(
 				"https://github.com/catppuccin/userstyles/raw/main/template/catppuccin.user.css",
 			)?
 			.text()?
@@ -357,9 +332,14 @@ fn main() -> Result<()> {
 					.expect("App link should be a valid URL"),
 			);
 
+			let comment_re = fancy_regex::Regex::new(
+				r"\/\*(?:(?!\*\/|==UserStyle==|prettier-ignore)[\s\S])*?\*\/",
+			)?;
+			template = comment_re.replace_all(&template, "").to_string();
+
 			fs::write(
 				new_directory.join(PathBuf::from("catppuccin.user.css")),
-				clean_css_comments(&template),
+				&template,
 			)?;
 
 			let metadata = Userstyle {
