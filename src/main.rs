@@ -283,25 +283,41 @@ fn main() -> Result<()> {
 											StringOrStrings::Multiple(n) => n.contains(&name),
 											StringOrStrings::Single(n) => *n == *name,
 										}
-								} else if let Some(categories) = &categories {
+								} else {
+									true
+								}
+							} && {
+								if let Some(categories) = &categories {
 									categories
 										.into_iter()
 										.all(|c| userstyle.1.categories.contains(&c))
-								} else if let Some(icon) = &icon {
+								} else {
+									true
+								}
+							} && {
+								if let Some(icon) = &icon {
 									if let Some(i) = &userstyle.1.icon {
 										*icon == *i
 									} else {
 										false
 									}
-								} else if let Some(color) = &color {
+								} else {
+									true
+								}
+							} && {
+								if let Some(color) = &color {
 									*color == userstyle.1.color
-								} else if let Some(app_link) = &app_link {
+								} else {
+									true
+								}
+							} && {
+								if let Some(app_link) = &app_link {
 									match &userstyle.1.readme.app_link {
 										StringOrStrings::Multiple(l) => l.contains(&app_link),
 										StringOrStrings::Single(l) => *l == *app_link,
 									}
 								} else {
-									false
+									true
 								}
 							};
 
