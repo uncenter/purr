@@ -123,8 +123,20 @@ enum Commands {
 		output: OutputFormat,
 	},
 	Init {
-		#[command(subcommand)]
-		command: Templates,
+		#[arg(long)]
+		name: Option<String>,
+
+		#[arg(long = "category")]
+		categories: Option<Vec<String>>,
+
+		#[arg(long)]
+		icon: Option<String>,
+
+		#[arg(long)]
+		color: Option<String>,
+
+		#[arg(long)]
+		app_link: Option<String>,
 	},
 }
 
@@ -149,26 +161,6 @@ enum Queries {
 enum OutputFormat {
 	Json,
 	Plain,
-}
-
-#[derive(Subcommand)]
-enum Templates {
-	Userstyle {
-		#[arg(long)]
-		name: Option<String>,
-
-		#[arg(long = "category")]
-		categories: Option<Vec<String>>,
-
-		#[arg(long)]
-		icon: Option<String>,
-
-		#[arg(long)]
-		color: Option<String>,
-
-		#[arg(long)]
-		app_link: Option<String>,
-	},
 }
 
 fn clean_css_comments(input: &str) -> String {
@@ -281,106 +273,112 @@ fn main() -> Result<()> {
 				}
 			}
 		}
-		Commands::Init { command } => {
+		Commands::Init {
+			name,
+			categories,
+			icon,
+			color,
+			app_link,
+		} => {
 			let cwd = env::current_dir()?;
-
 			if !cwd.join(PathBuf::from("scripts/userstyles.yml")).exists() {
 				bail!("Not in userstyles repository")
 			}
 
-			match command {
-				Templates::Userstyle {
-					name,
-					categories,
-					icon,
-					color,
-					app_link,
-				} => {
-					let name = name.unwrap_or_else(|| {
-						Text::new("What is the name of this website?")
-							.prompt()
-							.unwrap()
-					});
-					let name_kebab = name.to_case(convert_case::Case::Kebab);
-					let categories = categories.unwrap_or_else(|| {
-						MultiSelect::new(
-							"What categories apply to this website?",
-							USERSTYLES_CATEGORIES.to_vec(),
-						)
-						.prompt()
-						.unwrap()
-						.iter()
-						.map(|&s| s.to_string())
-						.collect()
-					});
-					let color = color.unwrap_or_else(|| {
-						Select::new(
-							"What is the primary brand color of this website?",
-							catppuccin::PALETTE
-								.mocha
-								.colors
-								.into_iter()
-								.filter(|c| c.accent)
-								.map(|c| c.identifier())
-								.collect(),
-						)
-						.prompt()
-						.unwrap()
-						.to_string()
-					});
-					let app_link = app_link.unwrap_or_else(|| {
-						Text::new("What is the URL of this website?")
-							.with_validator(|input: &str| {
-								if Url::parse(input).is_ok() {
-									Ok(Validation::Valid)
-								} else {
-									Ok(Validation::Invalid("Input must be a valid URL.".into()))
-								}
-							})
-							.prompt()
-							.unwrap()
-					});
+			let name = name.unwrap_or_else(|| {
+				Text::new("What is the name of this website?")
+					.prompt()
+					.unwrap()
+			});
+			let name_kebab = name.to_case(convert_case::Case::Kebab);
 
-					let new_directory =
-						cwd.join(PathBuf::from("styles/".to_string() + &name_kebab));
-					if new_directory.exists() {
-						bail!("Userstyle already exists",)
-					} else {
-						fs::create_dir(&new_directory)?;
-					}
+			let categories = categories.unwrap_or_else(|| {
+				MultiSelect::new(
+					"What categories apply to this website?",
+					USERSTYLES_CATEGORIES.to_vec(),
+				)
+				.prompt()
+				.unwrap()
+				.iter()
+				.map(|&s| s.to_string())
+				.collect()
+			});
 
-					let template: String = reqwest::blocking::get(
-						"https://github.com/catppuccin/userstyles/raw/main/template/catppuccin.user.css",
-					)?
-					.text()?.replace("<port-name> Catppuccin", &format!("{} Catppuccin", &name))
-					.replace("Soothing pastel theme for <port-name>", &format!("Soothing pastel theme for {}", &name))
-					.replace("<port-name>",  &name_kebab).replace("<website-domain>", Url::parse(&app_link)?.host_str().expect("App link should be a valid URL"));
+			let color = color.unwrap_or_else(|| {
+				Select::new(
+					"What is the primary brand color of this website?",
+					catppuccin::PALETTE
+						.mocha
+						.colors
+						.into_iter()
+						.filter(|c| c.accent)
+						.map(|c| c.identifier())
+						.collect(),
+				)
+				.prompt()
+				.unwrap()
+				.to_string()
+			});
 
-					fs::write(
-						new_directory.join(PathBuf::from("catppuccin.user.css")),
-						clean_css_comments(&template),
-					)?;
+			let app_link = app_link.unwrap_or_else(|| {
+				Text::new("What is the URL of this website?")
+					.with_validator(|input: &str| {
+						if Url::parse(input).is_ok() {
+							Ok(Validation::Valid)
+						} else {
+							Ok(Validation::Invalid("Input must be a valid URL.".into()))
+						}
+					})
+					.prompt()
+					.unwrap()
+			});
 
-					let metadata = Userstyle {
-						name: StringOrStrings::Single(name),
-						categories: categories,
-						icon: icon,
-						color: color,
-						readme: Readme {
-							app_link: StringOrStrings::Single(app_link),
-							current_maintainers: vec![],
-							past_maintainers: None,
-						},
-					};
-					let mut bare = HashMap::new();
-					bare.insert(name_kebab, metadata);
-
-					println!(
-						"{}",
-						serde_yaml::to_string(&UserstylesRoot { userstyles: bare }).unwrap()
-					)
-				}
+			let new_directory = cwd.join(PathBuf::from("styles/".to_string() + &name_kebab));
+			if new_directory.exists() {
+				bail!("Userstyle already exists",)
+			} else {
+				fs::create_dir(&new_directory)?;
 			}
+
+			let template: String = reqwest::blocking::get(
+				"https://github.com/catppuccin/userstyles/raw/main/template/catppuccin.user.css",
+			)?
+			.text()?
+			.replace("<port-name> Catppuccin", &format!("{} Catppuccin", &name))
+			.replace(
+				"Soothing pastel theme for <port-name>",
+				&format!("Soothing pastel theme for {}", &name),
+			)
+			.replace("<port-name>", &name_kebab)
+			.replace(
+				"<website-domain>",
+				Url::parse(&app_link)?
+					.host_str()
+					.expect("App link should be a valid URL"),
+			);
+
+			fs::write(
+				new_directory.join(PathBuf::from("catppuccin.user.css")),
+				clean_css_comments(&template),
+			)?;
+
+			let metadata = Userstyle {
+				name: StringOrStrings::Single(name),
+				categories: categories,
+				icon: icon,
+				color: color,
+				readme: Readme {
+					app_link: StringOrStrings::Single(app_link),
+					current_maintainers: vec![],
+					past_maintainers: None,
+				},
+			};
+			let mut bare = HashMap::new();
+			bare.insert(name_kebab, metadata);
+			println!(
+				"{}",
+				serde_yaml::to_string(&UserstylesRoot { userstyles: bare }).unwrap()
+			)
 		}
 	}
 
