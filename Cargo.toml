@@ -1,0 +1,24 @@
+[package]
+name = "uu"
+version = "0.1.0"
+authors = ["uncenter <uncenter@uncenter.dev>"]
+license = "MIT"
+description = "Utility commands for managing userstyles."
+readme = "README.md"
+homepage = "https://github.com/uncenter/uu"
+repository = "https://github.com/uncenter/uu"
+keywords = ["cli"]
+categories = ["command-line-utilities"]
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+color-eyre = "0.6.3"
+reqwest = { version = "0.12.4", features = ["blocking"] }
+serde = { version = "1.0.202", features = ["derive"] }
+serde_json = "1.0.117"
+serde_yaml = "0.9.34"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
