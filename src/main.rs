@@ -3,7 +3,7 @@ use convert_case::Casing;
 use std::{collections::HashMap, env, fs, path::PathBuf};
 use url::Url;
 
-use clap::{arg, Parser, Subcommand, ValueEnum};
+use clap::{arg, Args, Parser, Subcommand, ValueEnum};
 use inquire::{validator::Validation, MultiSelect, Select, Text};
 
 use serde::{Deserialize, Serialize};
@@ -154,6 +154,41 @@ enum Queries {
 		#[arg(short, long, default_value = "json", name = "FORMAT")]
 		output: OutputFormat,
 	},
+	Has {
+		#[arg(long)]
+		name: Option<String>,
+
+		#[arg(long = "category")]
+		categories: Option<Vec<String>>,
+
+		#[arg(long)]
+		icon: Option<String>,
+
+		#[arg(long)]
+		color: Option<String>,
+
+		#[arg(long)]
+		app_link: Option<String>,
+
+		#[command(flatten)]
+		result: Option<Results>,
+
+		#[arg(short, long)]
+		not: bool,
+
+		#[arg(short, long, default_value = "json", name = "FORMAT")]
+		output: OutputFormat,
+	},
+}
+
+#[derive(Args)]
+#[group(required = false, multiple = false)]
+struct Results {
+	#[arg(short, long)]
+	count: bool,
+
+	#[arg(short, long)]
+	list: bool,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -224,6 +259,76 @@ fn main() -> Result<()> {
 									.context("Failed to serialize results")?,
 								OutputFormat::Plain => result.join("\n"),
 							},
+						}
+					);
+				}
+				Some(Queries::Has {
+					name,
+					categories,
+					icon,
+					color,
+					app_link,
+					output,
+					not,
+					result: res,
+				}) => {
+					let result = data
+						.userstyles
+						.into_iter()
+						.filter(|userstyle| {
+							let matches: bool = {
+								if let Some(name) = &name {
+									*name == userstyle.0
+										|| match &userstyle.1.name {
+											StringOrStrings::Multiple(n) => n.contains(&name),
+											StringOrStrings::Single(n) => *n == *name,
+										}
+								} else if let Some(categories) = &categories {
+									categories
+										.into_iter()
+										.all(|c| userstyle.1.categories.contains(&c))
+								} else if let Some(icon) = &icon {
+									if let Some(i) = &userstyle.1.icon {
+										*icon == *i
+									} else {
+										false
+									}
+								} else if let Some(color) = &color {
+									*color == userstyle.1.color
+								} else if let Some(app_link) = &app_link {
+									match &userstyle.1.readme.app_link {
+										StringOrStrings::Multiple(l) => l.contains(&app_link),
+										StringOrStrings::Single(l) => *l == *app_link,
+									}
+								} else {
+									false
+								}
+							};
+
+							if not {
+								!matches
+							} else {
+								matches
+							}
+						})
+						.map(|userstyle| userstyle.0)
+						.collect::<Vec<_>>();
+
+					println!(
+						"{}",
+						match res {
+							Some(opt) => {
+								if opt.count {
+									result.len().to_string()
+								} else {
+									match output {
+										OutputFormat::Json => serde_json::to_string_pretty(&result)
+											.context("Failed to serialize results")?,
+										OutputFormat::Plain => result.join("\n"),
+									}
+								}
+							}
+							None => (!result.is_empty()).to_string(),
 						}
 					);
 				}
