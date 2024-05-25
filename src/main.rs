@@ -1,5 +1,6 @@
 use color_eyre::eyre::{bail, Context, Result};
 use convert_case::Casing;
+use regex::Regex;
 use std::{collections::HashMap, env, fs, path::PathBuf};
 use url::Url;
 
@@ -49,6 +50,11 @@ const USERSTYLES_CATEGORIES: [&str; 35] = [
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Root {
 	pub collaborators: Vec<Collaborator>,
+	pub userstyles: HashMap<String, Userstyle>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct UserstylesRoot {
 	pub userstyles: HashMap<String, Userstyle>,
 }
 
@@ -157,10 +163,30 @@ enum Templates {
 		#[arg(long)]
 		app_link: Option<String>,
 	},
-	Script {
-		#[arg(short, long)]
-		name: Option<String>,
-	},
+}
+
+fn clean_css_comments(input: &str) -> String {
+	let re = Regex::new(r"/\*([^*]|(\*+[^*/]))*\*+/").unwrap();
+
+	let mut result = String::with_capacity(input.len());
+	let mut last_end = 0;
+
+	for mat in re.find_iter(input) {
+		let start = mat.start();
+		let end = mat.end();
+		let comment = &input[start..end];
+
+		if comment.contains("==UserStyle==") || comment.contains("prettier-ignore") {
+			result.push_str(&input[last_end..end]);
+		} else {
+			result.push_str(&input[last_end..start]);
+		}
+		last_end = end;
+	}
+
+	result.push_str(&input[last_end..]);
+
+	result
 }
 
 fn main() -> Result<()> {
@@ -288,8 +314,8 @@ fn main() -> Result<()> {
 
 					let new_directory =
 						cwd.join(PathBuf::from("styles/".to_string() + &name_kebab));
-					if new_directory.exists() && new_directory.read_dir().into_iter().len() > 0 {
-						bail!("Userstyle already exists")
+					if new_directory.exists() {
+						bail!("Userstyle already exists",)
 					} else {
 						fs::create_dir(&new_directory)?;
 					}
@@ -303,7 +329,7 @@ fn main() -> Result<()> {
 
 					fs::write(
 						new_directory.join(PathBuf::from("catppuccin.user.css")),
-						template,
+						clean_css_comments(&template),
 					)?;
 
 					let metadata = Userstyle {
@@ -317,10 +343,14 @@ fn main() -> Result<()> {
 							past_maintainers: None,
 						},
 					};
+					let mut bare = HashMap::new();
+					bare.insert(name_kebab, metadata);
 
-					println!("{}", serde_yaml::to_string(&metadata).unwrap())
+					println!(
+						"{}",
+						serde_yaml::to_string(&UserstylesRoot { userstyles: bare }).unwrap()
+					)
 				}
-				Templates::Script { name } => todo!(),
 			}
 		}
 	}
