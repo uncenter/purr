@@ -162,6 +162,12 @@ Options:
   uu query has --color mauve --not --count
   ```
 
+- List userstyles that do not have `icon` defined.
+
+  ```
+  uu query has --icon --not --list
+  ```
+
 ### `init`
 
 The `init` command accepts each value (name, categories, etc.) via arguments, though if not provided a series of prompts will be displayed instead.
