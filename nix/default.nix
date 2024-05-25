@@ -25,10 +25,10 @@ rustPlatform.buildRustPackage {
       ]
     );
 
-  meta = with lib; {
+  meta = {
     description = "Utility commands for managing userstyles";
     homepage = "https://github.com/uncenter/purr";
-    license = licenses.mit;
+    license = lib.licenses.mit;
     mainProgram = "purr";
   };
 }

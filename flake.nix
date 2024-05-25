@@ -17,9 +17,8 @@
         default = pkgs.callPackage ./nix/shell.nix { };
       });
 
-      packages = forAllSystems (pkgs: rec {
-        default = purr;
-        purr = pkgs.callPackage ./nix/default.nix { };
+      packages = forAllSystems (pkgs: {
+        default = pkgs.callPackage ./nix/default.nix { };
       });
     };
 }
