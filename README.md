@@ -27,7 +27,7 @@ Options:
 
 ### `query`
 
-All of the query commands can be used with the `-o`/`--output` flag to change the output format between JSON and plain.
+Both of the query commands can be used with the `-o`/`--output` option to change the output format (`json` or `plain`).
 
 ```
 Usage: purr query [OPTIONS] [COMMAND]
