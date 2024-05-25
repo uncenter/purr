@@ -21,61 +21,29 @@ nix run github:uncenter/purr
 ## Usage
 
 ```
-Usage: purr <COMMAND>
-
-Commands:
-  query
-  init
-  help   Print this message or the help of the given subcommand(s)
-
-Options:
-  -h, --help     Print help
-  -V, --version  Print version
+purr <COMMAND> [-h | --help] [-V | --version]
 ```
 
 ### `query`
 
-Both of the query commands can be used with the `-o`/`--output` option to change the output format (`json` or `plain`).
-
 ```
-Usage: purr query [OPTIONS] [COMMAND]
-
-Commands:
-  maintained
-  has
-  help        Print this message or the help of the given subcommand(s)
-
-Options:
-  -c, --count
-  -o, --output <FORMAT>  [default: json] [possible values: json, plain]
-  -h, --help             Print help
+purr query [-c | --count] [-o | --output]
 ```
 
-**Examples**:
+Query the userstyles.yml data source. With no arguments the names of the userstyles are displayed.
 
-- List the userstyles.
+#### `-o` / `--output`
 
-  ```
-  purr query
-  ```
+Both query commands can be used with the `-o`/`--output` option to change the output format to either `json` and `plain` (defaults to `json`).
 
-- Count the number of userstyles.
+#### `--count`
 
-  ```
-  purr query --count
-  ```
+Count the number of userstyles.
 
 #### `maintained`
 
 ```
-Usage: purr query maintained [OPTIONS]
-
-Options:
-      --by <NAME>
-  -n, --not
-  -c, --count
-  -o, --output <FORMAT>  [default: json] [possible values: json, plain]
-  -h, --help             Print help
+purr query maintained [--by <NAME>] [-n | --not] [-c | --count] [-o | --output]
 ```
 
 **Examples**:
@@ -131,20 +99,16 @@ Options:
 #### `has`
 
 ```
-Usage: purr query has [OPTIONS]
-
-Options:
-      --name <NAME>
-      --category <CATEGORIES>
-      --icon <ICON>
-      --color <COLOR>
-      --app-link <APP_LINK>
-  -c, --count
-  -l, --list
-  -n, --not
-  -o, --output <FORMAT>        [default: json] [possible values: json, plain]
-  -h, --help                   Print help
+purr query has [PROPERTIES] [-n | --not] [-c | --count] [-l | --list] [-o | --output]
 ```
+
+**Properties:**
+
+- `--name <NAME>`
+- `--category <CATEGORIES>`
+- `--icon <ICON>`
+- `--color <COLOR>`
+- `--app-link <APP_LINK>`
 
 **Examples**:
 
@@ -183,16 +147,16 @@ Options:
 The `init` command accepts each value (name, categories, etc.) via arguments, though if not provided a series of prompts will be displayed instead.
 
 ```
-Usage: purr init [OPTIONS]
-
-Options:
-      --name <NAME>
-      --category <CATEGORIES>
-      --icon <ICON>
-      --color <COLOR>
-      --app-link <APP_LINK>
-  -h, --help                   Print help
+purr init [PROPERTIES]
 ```
+
+**Properties**:
+
+- `--name <NAME>`
+- `--category <CATEGORIES>`
+- `--icon <ICON>`
+- `--color <COLOR>`
+- `--app-link <APP_LINK>`
 
 ## Roadmap
 
@@ -204,3 +168,7 @@ Options:
 ## License
 
 [MIT](LICENSE)
+
+```
+
+```
