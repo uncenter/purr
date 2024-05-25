@@ -184,6 +184,13 @@ Options:
   -h, --help                   Print help
 ```
 
+## Roadmap
+
+- [ ] Query GitHub stars
+- [ ] Query contributors
+- [ ] Query maintainers
+- [ ] Query PRs (per userstyle, dated/at what time, by who)
+
 ## License
 
 [MIT](LICENSE)
