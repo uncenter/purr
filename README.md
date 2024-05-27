@@ -168,7 +168,3 @@ purr init [PROPERTIES]
 ## License
 
 [MIT](LICENSE)
-
-```
-
-```
