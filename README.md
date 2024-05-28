@@ -164,6 +164,10 @@ purr init [PROPERTIES]
 - [ ] Query contributors
 - [ ] Query maintainers
 - [ ] Query PRs (per userstyle, dated/at what time, by who)
+- [ ] Make it non userstyles-specific
+  - [ ] Query ports.yml
+  - [ ] catppuccin/template
+  - [ ] Whiskers template
 
 ## License
 
