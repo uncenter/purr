@@ -85,10 +85,19 @@ pub enum Query {
 		categories: Option<Vec<String>>,
 
 		#[arg(long, num_args = 0..=1, default_missing_value = "true")]
+		upstreamed: Option<bool>,
+
+		#[arg(long)]
+		platform: Option<Vec<String>>,
+
+		#[arg(long, num_args = 0..=1, default_missing_value = "true")]
 		icon: Option<String>,
 
 		#[arg(long)]
 		color: Option<String>,
+
+		#[arg(long, num_args = 0..=1, default_missing_value = "true")]
+		alias: Option<String>,
 
 		#[arg(long, num_args = 0..=1, default_missing_value = "true")]
 		url: Option<String>,

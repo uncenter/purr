@@ -284,14 +284,7 @@ purr userstyles init [PROPERTIES]
 - [ ] Query contributors
 - [ ] Query maintainers
 - [ ] Query PRs (per userstyle, dated/at what time, by who)
-- [ ] Make it non userstyles-specific
-  - [x] Query ports.yml
-  - [ ] https://github.com/catppuccin/template
-  - [ ] Support querying ports-specific properties:
-    - [ ] upstreamed
-    - [ ] platform
-    - [ ] links
-    - [ ] alias
+- [ ] Init https://github.com/catppuccin/template
 
 ## License
 

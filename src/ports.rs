@@ -8,6 +8,7 @@ use url::Url;
 
 use crate::cli::{OutputFormat, Query};
 use crate::models::ports::Root;
+use crate::models::shared::StringOrStrings;
 use crate::{
 	booleanish_match, display_has_or_list_or_count, display_list_or_count,
 	matches_current_maintainer,
@@ -48,8 +49,11 @@ pub fn query(command: Option<Query>, count: bool, output: OutputFormat) -> Resul
 		Some(Query::Has {
 			name,
 			categories,
+			upstreamed,
+			platform,
 			icon,
 			color,
+			alias,
 			url,
 			output,
 			not,
@@ -62,6 +66,21 @@ pub fn query(command: Option<Query>, count: bool, output: OutputFormat) -> Resul
 					let matches: bool = {
 						if let Some(name) = &name {
 							*name == port.0 || &port.1.name == name
+						} else {
+							true
+						}
+					} && {
+						if let Some(upstreamed) = &upstreamed {
+							*upstreamed == port.1.upstreamed.or(Some(false)).unwrap()
+						} else {
+							true
+						}
+					} && {
+						if let Some(platform) = &platform {
+							platform.into_iter().all(|p| match &port.1.platform {
+								StringOrStrings::Single(platform) => *platform == *p,
+								StringOrStrings::Multiple(platforms) => platforms.contains(&p),
+							})
 						} else {
 							true
 						}
@@ -83,6 +102,13 @@ pub fn query(command: Option<Query>, count: bool, output: OutputFormat) -> Resul
 					} && {
 						if let Some(color) = &color {
 							color.parse().unwrap_or_else(|_| *color == port.1.color)
+						} else {
+							true
+						}
+					} && {
+						if let Some(alias) = &alias {
+							let value = &port.1.alias;
+							booleanish_match(value.to_owned(), alias.to_string())
 						} else {
 							true
 						}
