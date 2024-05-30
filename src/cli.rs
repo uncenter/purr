@@ -1,5 +1,8 @@
 use clap::{arg, Args, Parser, Subcommand, ValueEnum};
+use color_eyre::owo_colors::OwoColorize;
 use url::Url;
+
+use crate::models::shared::CATEGORIES;
 
 #[derive(Parser)]
 #[command(version, arg_required_else_help(true))]
@@ -49,7 +52,7 @@ pub enum Userstyles {
 		#[arg(long)]
 		name: Option<String>,
 
-		#[arg(long = "category")]
+		#[arg(long = "category", value_delimiter = ',', value_parser = valid_category)]
 		categories: Option<Vec<String>>,
 
 		#[arg(long)]
@@ -79,7 +82,7 @@ pub enum Query {
 		output: OutputFormat,
 	},
 	Stars {
-		#[arg(long, name = "REPOSITORY")]
+		#[arg(long, name = "REPOSITORY", conflicts_with = "archived")]
 		r#for: Option<String>,
 
 		#[arg(long)]
@@ -89,7 +92,7 @@ pub enum Query {
 		#[arg(long)]
 		name: Option<String>,
 
-		#[arg(long = "category")]
+		#[arg(long = "category", value_delimiter = ',', value_parser = valid_category)]
 		categories: Option<Vec<String>>,
 
 		#[arg(long, num_args = 0..=1, default_missing_value = "true")]
@@ -140,7 +143,7 @@ pub enum UserstylesQuery {
 		#[arg(long)]
 		name: Option<String>,
 
-		#[arg(long = "category")]
+		#[arg(long = "category", value_delimiter = ',', value_parser = valid_category)]
 		categories: Option<Vec<String>>,
 
 		#[arg(long, num_args = 0..=1, default_missing_value = "true")]
@@ -184,5 +187,32 @@ fn valid_url(u: &str) -> Result<String, String> {
 		Ok(String::from(u))
 	} else {
 		Err(format!("{} is not a valid URL", u))
+	}
+}
+
+fn valid_category(c: &str) -> Result<String, String> {
+	if CATEGORIES.contains(&c) {
+		Ok(String::from(c))
+	} else {
+		use std::cmp::Ordering;
+
+		let mut distances = CATEGORIES
+			.into_iter()
+			.map(|category: &str| (category, strsim::jaro(c, category)))
+			.filter(|(_, confidence)| *confidence > 0.7)
+			.collect::<Vec<_>>();
+
+		distances.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
+		let best = distances.first().map(|a| a.0.to_owned());
+
+		Err(format!(
+			"{} is not a valid category{}",
+			c,
+			if let Some(best) = best {
+				format!(". Did you mean '{}'?", best.yellow())
+			} else {
+				"".to_string()
+			}
+		))
 	}
 }
