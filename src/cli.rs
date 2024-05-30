@@ -206,10 +206,9 @@ fn valid_category(c: &str) -> Result<String, String> {
 		let best = distances.first().map(|a| a.0.to_owned());
 
 		Err(format!(
-			"{} is not a valid category{}",
-			c,
+			"not a valid category{}",
 			if let Some(best) = best {
-				format!(". Did you mean '{}'?", best.yellow())
+				format!(". Did you mean '{}'?", best.green())
 			} else {
 				"".to_string()
 			}
