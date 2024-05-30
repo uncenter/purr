@@ -22,9 +22,6 @@ pub enum Commands {
 
 		#[arg(short, long, value_enum, default_value_t)]
 		get: Key,
-
-		#[arg(short, long, default_value = "json", name = "FORMAT")]
-		output: OutputFormat,
 	},
 	Init {
 		#[arg(long)]
@@ -50,9 +47,6 @@ pub enum Userstyles {
 
 		#[arg(short, long, value_enum, default_value_t)]
 		get: UserstyleKey,
-
-		#[arg(short, long, default_value = "json", name = "FORMAT")]
-		output: OutputFormat,
 	},
 	Init {
 		#[arg(long)]
@@ -158,9 +152,6 @@ pub struct ExtraOptions {
 
 	#[arg(short, long, value_enum, default_value_t)]
 	pub get: Key,
-
-	#[arg(short, long, default_value = "json", name = "FORMAT")]
-	pub output: OutputFormat,
 }
 
 #[derive(Args)]
@@ -173,15 +164,6 @@ pub struct ExtraUserstyleOptions {
 
 	#[arg(short, long, value_enum, default_value_t)]
 	pub get: UserstyleKey,
-
-	#[arg(short, long, default_value = "json", name = "FORMAT")]
-	pub output: OutputFormat,
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-pub enum OutputFormat {
-	Json,
-	Plain,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]

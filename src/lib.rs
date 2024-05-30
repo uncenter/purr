@@ -1,7 +1,7 @@
 use color_eyre::eyre::{Context, Ok, Result};
 use serde_json::Value;
 
-use cli::{Key, OutputFormat, UserstyleKey};
+use cli::{Key, UserstyleKey};
 use models::{
 	ports::Port,
 	shared::{Maintainer, StringOrStrings},
@@ -31,16 +31,13 @@ fn matches_current_maintainer(current_maintainers: &Vec<Maintainer>, by: Option<
 	}
 }
 
-fn display_list_or_count(result: Vec<Value>, count: bool, output: OutputFormat) -> Result<()> {
+fn display_list_or_count(result: Vec<Value>, count: bool) -> Result<()> {
 	println!(
 		"{}",
 		match count {
 			true => result.len().to_string(),
-			false => match output {
-				OutputFormat::Json =>
-					serde_json::to_string_pretty(&result).context("Failed to serialize results")?,
-				OutputFormat::Plain => todo!(),
-			},
+			false =>
+				serde_json::to_string_pretty(&result).context("Failed to serialize results")?,
 		}
 	);
 

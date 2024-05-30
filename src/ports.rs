@@ -6,13 +6,13 @@ use inquire::validator::Validation;
 use inquire::Text;
 use url::Url;
 
-use crate::cli::{Key, OutputFormat, Query};
+use crate::cli::{Key, Query};
 use crate::github::{self, paginate_repositories, RepositoryResponse};
 use crate::models::ports::Root;
 use crate::models::shared::StringOrStrings;
 use crate::{booleanish_match, display_list_or_count, get_key, matches_current_maintainer};
 
-pub fn query(command: Option<Query>, count: bool, get: Key, output: OutputFormat) -> Result<()> {
+pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 	let raw: String = reqwest::blocking::get(
 		"https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml",
 	)?
@@ -37,7 +37,7 @@ pub fn query(command: Option<Query>, count: bool, get: Key, output: OutputFormat
 				.map(|port| get_key(port, options.get))
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, count, output)?;
+			display_list_or_count(result, count)?;
 		}
 		Some(Query::Has {
 			name,
@@ -120,7 +120,7 @@ pub fn query(command: Option<Query>, count: bool, get: Key, output: OutputFormat
 				.map(|port| get_key(port, options.get))
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, options.count, output)?;
+			display_list_or_count(result, options.count)?;
 		}
 		Some(Query::Stars { r#for, archived }) => match r#for {
 			Some(repository) => {
@@ -157,7 +157,7 @@ pub fn query(command: Option<Query>, count: bool, get: Key, output: OutputFormat
 				.map(|port| get_key(port, get))
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, count, output)?;
+			display_list_or_count(result, count)?;
 		}
 	}
 

@@ -7,19 +7,14 @@ use inquire::validator::Validation;
 use inquire::{MultiSelect, Select, Text};
 use url::Url;
 
-use crate::cli::{OutputFormat, UserstyleKey, UserstylesQuery};
+use crate::cli::{UserstyleKey, UserstylesQuery};
 use crate::models::shared::{StringOrStrings, CATEGORIES};
 use crate::models::userstyles::{Readme, Root, Userstyle, UserstylesRoot};
 use crate::{
 	booleanish_match, display_list_or_count, get_userstyle_key, matches_current_maintainer,
 };
 
-pub fn query(
-	command: Option<UserstylesQuery>,
-	count: bool,
-	get: UserstyleKey,
-	output: OutputFormat,
-) -> Result<()> {
+pub fn query(command: Option<UserstylesQuery>, count: bool, get: UserstyleKey) -> Result<()> {
 	let raw: String = reqwest::blocking::get(
 		"https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml",
 	)?
@@ -44,7 +39,7 @@ pub fn query(
 				.map(|userstyle| get_userstyle_key(userstyle, options.get))
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, count, output)?;
+			display_list_or_count(result, count)?;
 		}
 		Some(UserstylesQuery::Has {
 			name,
@@ -113,7 +108,7 @@ pub fn query(
 				.map(|userstyle| get_userstyle_key(userstyle, options.get))
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, options.count, output)?;
+			display_list_or_count(result, options.count)?;
 		}
 		None => {
 			let result = data
@@ -122,7 +117,7 @@ pub fn query(
 				.map(|userstyle| get_userstyle_key(userstyle, get))
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, count, output)?;
+			display_list_or_count(result, count)?;
 		}
 	}
 
