@@ -13,15 +13,17 @@ fn main() -> Result<()> {
 		Commands::Query {
 			command,
 			count,
+			get,
 			output,
-		} => ports::query(command, count, output)?,
+		} => ports::query(command, count, get, output)?,
 		Commands::Init { name, url } => ports::init(name, url)?,
 		Commands::Userstyles { command } => match command {
 			Userstyles::Query {
 				command,
 				count,
+				get,
 				output,
-			} => userstyles::query(command, count, output)?,
+			} => userstyles::query(command, count, get, output)?,
 			Userstyles::Init {
 				name,
 				categories,

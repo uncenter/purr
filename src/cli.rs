@@ -20,6 +20,9 @@ pub enum Commands {
 		#[arg(short, long)]
 		count: bool,
 
+		#[arg(short, long, value_enum, default_value_t)]
+		get: Key,
+
 		#[arg(short, long, default_value = "json", name = "FORMAT")]
 		output: OutputFormat,
 	},
@@ -44,6 +47,9 @@ pub enum Userstyles {
 
 		#[arg(short, long)]
 		count: bool,
+
+		#[arg(short, long, value_enum, default_value_t)]
+		get: UserstyleKey,
 
 		#[arg(short, long, default_value = "json", name = "FORMAT")]
 		output: OutputFormat,
@@ -72,14 +78,8 @@ pub enum Query {
 		#[arg(long, name = "NAME")]
 		by: Option<String>,
 
-		#[arg(short, long)]
-		not: bool,
-
-		#[arg(short, long)]
-		count: bool,
-
-		#[arg(short, long, default_value = "json", name = "FORMAT")]
-		output: OutputFormat,
+		#[command(flatten)]
+		options: ExtraOptions,
 	},
 	Stars {
 		#[arg(long, name = "REPOSITORY", conflicts_with = "archived")]
@@ -114,13 +114,7 @@ pub enum Query {
 		url: Option<String>,
 
 		#[command(flatten)]
-		result: Option<CountOrList>,
-
-		#[arg(short, long)]
-		not: bool,
-
-		#[arg(short, long, default_value = "json", name = "FORMAT")]
-		output: OutputFormat,
+		options: ExtraOptions,
 	},
 }
 
@@ -130,14 +124,8 @@ pub enum UserstylesQuery {
 		#[arg(long, name = "NAME")]
 		by: Option<String>,
 
-		#[arg(short, long)]
-		not: bool,
-
-		#[arg(short, long)]
-		count: bool,
-
-		#[arg(short, long, default_value = "json", name = "FORMAT")]
-		output: OutputFormat,
+		#[command(flatten)]
+		options: ExtraUserstyleOptions,
 	},
 	Has {
 		#[arg(long)]
@@ -156,30 +144,79 @@ pub enum UserstylesQuery {
 		app_link: Option<String>,
 
 		#[command(flatten)]
-		result: Option<CountOrList>,
-
-		#[arg(short, long)]
-		not: bool,
-
-		#[arg(short, long, default_value = "json", name = "FORMAT")]
-		output: OutputFormat,
+		options: ExtraUserstyleOptions,
 	},
 }
 
 #[derive(Args)]
-#[group(required = false, multiple = false)]
-pub struct CountOrList {
+pub struct ExtraOptions {
+	#[arg(short, long)]
+	pub not: bool,
+
 	#[arg(short, long)]
 	pub count: bool,
 
+	#[arg(short, long, value_enum, default_value_t)]
+	pub get: Key,
+
+	#[arg(short, long, default_value = "json", name = "FORMAT")]
+	pub output: OutputFormat,
+}
+
+#[derive(Args)]
+pub struct ExtraUserstyleOptions {
 	#[arg(short, long)]
-	pub list: bool,
+	pub not: bool,
+
+	#[arg(short, long)]
+	pub count: bool,
+
+	#[arg(short, long, value_enum, default_value_t)]
+	pub get: UserstyleKey,
+
+	#[arg(short, long, default_value = "json", name = "FORMAT")]
+	pub output: OutputFormat,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum OutputFormat {
 	Json,
 	Plain,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+pub enum Key {
+	Identifier,
+	Name,
+	Categories,
+	Upstreamed,
+	Platform,
+	Icon,
+	Color,
+	Alias,
+	Url,
+}
+
+impl Default for Key {
+	fn default() -> Self {
+		Key::Identifier
+	}
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+pub enum UserstyleKey {
+	Identifier,
+	Name,
+	Categories,
+	Icon,
+	Color,
+	AppLink,
+}
+
+impl Default for UserstyleKey {
+	fn default() -> Self {
+		UserstyleKey::Identifier
+	}
 }
 
 fn valid_url(u: &str) -> Result<String, String> {

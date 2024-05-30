@@ -6,16 +6,13 @@ use inquire::validator::Validation;
 use inquire::Text;
 use url::Url;
 
-use crate::cli::{OutputFormat, Query};
+use crate::cli::{Key, OutputFormat, Query};
 use crate::github::{self, paginate_repositories, RepositoryResponse};
 use crate::models::ports::Root;
 use crate::models::shared::StringOrStrings;
-use crate::{
-	booleanish_match, display_has_or_list_or_count, display_list_or_count,
-	matches_current_maintainer,
-};
+use crate::{booleanish_match, display_list_or_count, get_key, matches_current_maintainer};
 
-pub fn query(command: Option<Query>, count: bool, output: OutputFormat) -> Result<()> {
+pub fn query(command: Option<Query>, count: bool, get: Key, output: OutputFormat) -> Result<()> {
 	let raw: String = reqwest::blocking::get(
 		"https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml",
 	)?
@@ -23,27 +20,22 @@ pub fn query(command: Option<Query>, count: bool, output: OutputFormat) -> Resul
 	let data: Root = serde_yaml::from_str(&raw).unwrap();
 
 	match command {
-		Some(Query::Maintained {
-			by,
-			not,
-			count,
-			output,
-		}) => {
-			let result: Vec<String> = data
+		Some(Query::Maintained { by, options }) => {
+			let result = data
 				.ports
 				.into_iter()
 				.filter(|port| {
 					let current_maintainers = &port.1.current_maintainers;
 					let matches = matches_current_maintainer(current_maintainers, by.to_owned());
 
-					if not {
+					if options.not {
 						!matches
 					} else {
 						matches
 					}
 				})
-				.map(|port| port.0)
-				.collect();
+				.map(|port| get_key(port, options.get))
+				.collect::<Vec<_>>();
 
 			display_list_or_count(result, count, output)?;
 		}
@@ -56,11 +48,9 @@ pub fn query(command: Option<Query>, count: bool, output: OutputFormat) -> Resul
 			color,
 			alias,
 			url,
-			output,
-			not,
-			result: res,
+			options,
 		}) => {
-			let result: Vec<String> = data
+			let result = data
 				.ports
 				.into_iter()
 				.filter(|port| {
@@ -121,16 +111,16 @@ pub fn query(command: Option<Query>, count: bool, output: OutputFormat) -> Resul
 						}
 					};
 
-					if not {
+					if options.not {
 						!matches
 					} else {
 						matches
 					}
 				})
-				.map(|port| port.0)
-				.collect();
+				.map(|port| get_key(port, options.get))
+				.collect::<Vec<_>>();
 
-			display_has_or_list_or_count(result, res, output)?;
+			display_list_or_count(result, options.count, output)?;
 		}
 		Some(Query::Stars { r#for, archived }) => match r#for {
 			Some(repository) => {
@@ -161,7 +151,11 @@ pub fn query(command: Option<Query>, count: bool, output: OutputFormat) -> Resul
 			}
 		},
 		None => {
-			let result: Vec<String> = data.ports.into_iter().map(|port| port.0).collect();
+			let result = data
+				.ports
+				.into_iter()
+				.map(|port| get_key(port, get))
+				.collect::<Vec<_>>();
 
 			display_list_or_count(result, count, output)?;
 		}

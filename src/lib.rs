@@ -1,6 +1,12 @@
-use cli::{CountOrList, OutputFormat};
 use color_eyre::eyre::{Context, Ok, Result};
-use models::shared::Maintainer;
+use serde_json::Value;
+
+use cli::{Key, OutputFormat, UserstyleKey};
+use models::{
+	ports::Port,
+	shared::{Maintainer, StringOrStrings},
+	userstyles::Userstyle,
+};
 
 pub mod cli;
 pub mod github;
@@ -25,7 +31,7 @@ fn matches_current_maintainer(current_maintainers: &Vec<Maintainer>, by: Option<
 	}
 }
 
-fn display_list_or_count(result: Vec<String>, count: bool, output: OutputFormat) -> Result<()> {
+fn display_list_or_count(result: Vec<Value>, count: bool, output: OutputFormat) -> Result<()> {
 	println!(
 		"{}",
 		match count {
@@ -33,25 +39,10 @@ fn display_list_or_count(result: Vec<String>, count: bool, output: OutputFormat)
 			false => match output {
 				OutputFormat::Json =>
 					serde_json::to_string_pretty(&result).context("Failed to serialize results")?,
-				OutputFormat::Plain => result.join("\n"),
+				OutputFormat::Plain => todo!(),
 			},
 		}
 	);
-
-	Ok(())
-}
-
-fn display_has_or_list_or_count(
-	result: Vec<String>,
-	maybe_has: Option<CountOrList>,
-	output: OutputFormat,
-) -> Result<()> {
-	match maybe_has {
-		Some(opt) => {
-			display_list_or_count(result, opt.count, output)?;
-		}
-		None => println!("{}", !result.is_empty()),
-	}
 
 	Ok(())
 }
@@ -64,4 +55,48 @@ fn booleanish_match(value: Option<String>, expected: String) -> bool {
 		} else {
 			false
 		})
+}
+
+pub fn get_key(entry: (String, Port), key: Key) -> Value {
+	match key {
+		Key::Identifier => Value::String(entry.0),
+		Key::Name => Value::String(entry.1.name),
+		Key::Categories => {
+			Value::Array(entry.1.categories.into_iter().map(Value::String).collect())
+		}
+		Key::Upstreamed => Value::Bool(entry.1.upstreamed.expect("upstreamed should exist")),
+		Key::Platform => match entry.1.platform {
+			StringOrStrings::Single(platform) => Value::String(platform),
+			StringOrStrings::Multiple(platforms) => {
+				Value::Array(platforms.into_iter().map(Value::String).collect())
+			}
+		},
+		Key::Icon => Value::String(entry.1.icon.expect("icon should exist")),
+		Key::Color => Value::String(entry.1.color),
+		Key::Alias => Value::String(entry.1.alias.expect("alias should exist")),
+		Key::Url => Value::String(entry.1.url.expect("url exist eixst")),
+	}
+}
+
+pub fn get_userstyle_key(entry: (String, Userstyle), key: UserstyleKey) -> Value {
+	match key {
+		UserstyleKey::Identifier => Value::String(entry.0),
+		UserstyleKey::Name => match entry.1.name {
+			StringOrStrings::Single(name) => Value::String(name),
+			StringOrStrings::Multiple(names) => {
+				Value::Array(names.into_iter().map(Value::String).collect())
+			}
+		},
+		UserstyleKey::Categories => {
+			Value::Array(entry.1.categories.into_iter().map(Value::String).collect())
+		}
+		UserstyleKey::Icon => Value::String(entry.1.icon.expect("icon should exist")),
+		UserstyleKey::Color => Value::String(entry.1.color),
+		UserstyleKey::AppLink => match entry.1.readme.app_link {
+			StringOrStrings::Single(link) => Value::String(link),
+			StringOrStrings::Multiple(links) => {
+				Value::Array(links.into_iter().map(Value::String).collect())
+			}
+		},
+	}
 }

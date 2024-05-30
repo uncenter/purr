@@ -7,15 +7,19 @@ use inquire::validator::Validation;
 use inquire::{MultiSelect, Select, Text};
 use url::Url;
 
-use crate::cli::{OutputFormat, UserstylesQuery};
+use crate::cli::{OutputFormat, UserstyleKey, UserstylesQuery};
 use crate::models::shared::{StringOrStrings, CATEGORIES};
 use crate::models::userstyles::{Readme, Root, Userstyle, UserstylesRoot};
 use crate::{
-	booleanish_match, display_has_or_list_or_count, display_list_or_count,
-	matches_current_maintainer,
+	booleanish_match, display_list_or_count, get_userstyle_key, matches_current_maintainer,
 };
 
-pub fn query(command: Option<UserstylesQuery>, count: bool, output: OutputFormat) -> Result<()> {
+pub fn query(
+	command: Option<UserstylesQuery>,
+	count: bool,
+	get: UserstyleKey,
+	output: OutputFormat,
+) -> Result<()> {
 	let raw: String = reqwest::blocking::get(
 		"https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml",
 	)?
@@ -23,27 +27,22 @@ pub fn query(command: Option<UserstylesQuery>, count: bool, output: OutputFormat
 	let data: Root = serde_yaml::from_str(&raw).unwrap();
 
 	match command {
-		Some(UserstylesQuery::Maintained {
-			by,
-			not,
-			count,
-			output,
-		}) => {
-			let result: Vec<String> = data
+		Some(UserstylesQuery::Maintained { by, options }) => {
+			let result = data
 				.userstyles
 				.into_iter()
 				.filter(|userstyle| {
 					let current_maintainers = &userstyle.1.readme.current_maintainers;
 					let matches = matches_current_maintainer(current_maintainers, by.to_owned());
 
-					if not {
+					if options.not {
 						!matches
 					} else {
 						matches
 					}
 				})
-				.map(|userstyle| userstyle.0)
-				.collect();
+				.map(|userstyle| get_userstyle_key(userstyle, options.get))
+				.collect::<Vec<_>>();
 
 			display_list_or_count(result, count, output)?;
 		}
@@ -53,11 +52,9 @@ pub fn query(command: Option<UserstylesQuery>, count: bool, output: OutputFormat
 			icon,
 			color,
 			app_link,
-			output,
-			not,
-			result: res,
+			options,
 		}) => {
-			let result: Vec<String> = data
+			let result = data
 				.userstyles
 				.into_iter()
 				.filter(|userstyle| {
@@ -107,23 +104,23 @@ pub fn query(command: Option<UserstylesQuery>, count: bool, output: OutputFormat
 						}
 					};
 
-					if not {
+					if options.not {
 						!matches
 					} else {
 						matches
 					}
 				})
-				.map(|userstyle| userstyle.0)
-				.collect();
+				.map(|userstyle| get_userstyle_key(userstyle, options.get))
+				.collect::<Vec<_>>();
 
-			display_has_or_list_or_count(result, res, output)?;
+			display_list_or_count(result, options.count, output)?;
 		}
 		None => {
-			let result: Vec<String> = data
+			let result = data
 				.userstyles
 				.into_iter()
-				.map(|userstyle| userstyle.0)
-				.collect();
+				.map(|userstyle| get_userstyle_key(userstyle, get))
+				.collect::<Vec<_>>();
 
 			display_list_or_count(result, count, output)?;
 		}
