@@ -78,6 +78,13 @@ pub enum Query {
 		#[arg(short, long, default_value = "json", name = "FORMAT")]
 		output: OutputFormat,
 	},
+	Stars {
+		#[arg(long, name = "REPOSITORY")]
+		r#for: Option<String>,
+
+		#[arg(long)]
+		archived: bool,
+	},
 	Has {
 		#[arg(long)]
 		name: Option<String>,

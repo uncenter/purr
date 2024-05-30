@@ -3,6 +3,7 @@ use color_eyre::eyre::{Context, Ok, Result};
 use models::shared::Maintainer;
 
 pub mod cli;
+pub mod github;
 pub mod models;
 pub mod ports;
 pub mod userstyles;

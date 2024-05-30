@@ -7,6 +7,7 @@ use inquire::Text;
 use url::Url;
 
 use crate::cli::{OutputFormat, Query};
+use crate::github::{self, paginate_repositories, RepositoryResponse};
 use crate::models::ports::Root;
 use crate::models::shared::StringOrStrings;
 use crate::{
@@ -131,6 +132,34 @@ pub fn query(command: Option<Query>, count: bool, output: OutputFormat) -> Resul
 
 			display_has_or_list_or_count(result, res, output)?;
 		}
+		Some(Query::Stars { r#for, archived }) => match r#for {
+			Some(repository) => {
+				let data = github::rest(&format!("repos/catppuccin/{}", repository))?
+					.json::<RepositoryResponse>()?;
+
+				println!("{}", data.stargazers_count)
+			}
+			None => {
+				let repositories = paginate_repositories()?;
+
+				let stars: i64 = repositories
+					.iter()
+					.flatten()
+					.filter_map(|r| {
+						let count = r.stargazer_count;
+						let matches = archived == r.is_archived;
+
+						if matches {
+							Some(count)
+						} else {
+							None
+						}
+					})
+					.sum();
+
+				println!("{}", stars)
+			}
+		},
 		None => {
 			let result: Vec<String> = data.ports.into_iter().map(|port| port.0).collect();
 
@@ -166,11 +195,7 @@ pub fn init(name: Option<String>, url: Option<String>) -> Result<()> {
 	if target.exists() {
 		bail!("Directory already exists",)
 	} else {
-		let client = reqwest::blocking::Client::new();
-		let response = client
-			.get("https://api.github.com/repos/catppuccin/template/tarball")
-			.header(reqwest::header::USER_AGENT, "catppuccin-purr")
-			.send()?;
+		let response = github::rest("repos/catppuccin/template/tarball")?;
 
 		let temp = env::temp_dir();
 		let tarball = temp.join("repo.tar.gz");

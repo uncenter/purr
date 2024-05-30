@@ -140,6 +140,38 @@ purr query has [PROPERTIES] [-n | --not] [-c | --count] [-l | --list] [-o | --ou
   purr userstyles query has --icon --not --list
   ```
 
+#### `stars`
+
+```
+purr query stars [--for <REPOSITORY>] [--archived]
+```
+
+**Examples**:
+
+- Get the total stars for all repositories across the organization.
+
+  ```
+  purr query stars
+  ```
+
+- Get the total stars for all non-archived repositories across the organization.
+
+  ```
+  purr query stars --archived false
+  ```
+
+- Get the total stars for only archived repositories across the organization.
+
+  ```
+  purr query stars --archived true
+  ```
+
+- Get the stars for a repository called `<repository>`.
+
+  ```
+  purr query stars --for "<repository>"
+  ```
+
 ### `init`
 
 The `init` command accepts each value (name, categories, etc.) via arguments, though if not provided a series of prompts will be displayed instead.
@@ -288,13 +320,6 @@ purr userstyles init [PROPERTIES]
 - `--icon <ICON>`
 - `--color <COLOR>`
 - `--app-link <APP_LINK>`
-
-## Roadmap
-
-- [ ] Query GitHub stars
-- [ ] Query contributors
-- [ ] Query maintainers
-- [ ] Query PRs (per userstyle, dated/at what time, by who)
 
 ## License
 

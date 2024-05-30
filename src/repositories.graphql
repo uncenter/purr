@@ -1,0 +1,16 @@
+query Repositories($cursor: String) {
+	organization(login: "catppuccin") {
+		repositories(first: 100, after: $cursor) {
+			nodes {
+				name
+				isArchived
+				stargazerCount
+			}
+			pageInfo {
+				endCursor
+				hasNextPage
+				hasPreviousPage
+			}
+		}
+	}
+}
