@@ -1,4 +1,5 @@
 use clap::{arg, Args, Parser, Subcommand, ValueEnum};
+use url::Url;
 
 #[derive(Parser)]
 #[command(version, arg_required_else_help(true))]
@@ -23,7 +24,7 @@ pub enum Commands {
 		#[arg(long)]
 		name: Option<String>,
 
-		#[arg(long)]
+		#[arg(long, value_parser = valid_url)]
 		url: Option<String>,
 	},
 	Userstyles {
@@ -57,7 +58,7 @@ pub enum Userstyles {
 		#[arg(long)]
 		color: Option<String>,
 
-		#[arg(long)]
+		#[arg(long, value_parser = valid_url)]
 		url: Option<String>,
 	},
 }
@@ -99,7 +100,7 @@ pub enum Query {
 		#[arg(long, num_args = 0..=1, default_missing_value = "true")]
 		alias: Option<String>,
 
-		#[arg(long, num_args = 0..=1, default_missing_value = "true")]
+		#[arg(long, num_args = 0..=1, default_missing_value = "true", value_parser = valid_url)]
 		url: Option<String>,
 
 		#[command(flatten)]
@@ -141,7 +142,7 @@ pub enum UserstylesQuery {
 		#[arg(long)]
 		color: Option<String>,
 
-		#[arg(long)]
+		#[arg(long, value_parser = valid_url)]
 		app_link: Option<String>,
 
 		#[command(flatten)]
@@ -169,4 +170,12 @@ pub struct CountOrList {
 pub enum OutputFormat {
 	Json,
 	Plain,
+}
+
+fn valid_url(u: &str) -> Result<String, String> {
+	if Url::parse(u).is_ok() {
+		Ok(String::from(u))
+	} else {
+		Err(format!("{} is not a valid URL", u))
+	}
 }
