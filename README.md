@@ -25,14 +25,10 @@ purr <COMMAND> [-h | --help] [-V | --version]
 ### `query`
 
 ```
-purr query [-c | --count] [-o | --output]
+purr query [-c | --count]
 ```
 
 Query the ports.yml data source. With no arguments the names of the ports are displayed.
-
-#### `-o` / `--output`
-
-Both query commands can be used with the `-o`/`--output` option to change the output format to either `json` and `plain` (defaults to `json`).
 
 #### `--count`
 
@@ -41,7 +37,7 @@ Count the number of ports.
 #### `maintained`
 
 ```
-purr query maintained [--by <NAME>] [-n | --not] [-c | --count] [-o | --output]
+purr query maintained [--by <NAME>] [-n | --not] [-c | --count]
 ```
 
 **Examples**:
@@ -97,7 +93,7 @@ purr query maintained [--by <NAME>] [-n | --not] [-c | --count] [-o | --output]
 #### `has`
 
 ```
-purr query has [PROPERTIES] [-n | --not] [-c | --count] [-o | --output]
+purr query has [PROPERTIES] [-n | --not] [-c | --count]
 ```
 
 **Properties:**
@@ -132,6 +128,12 @@ purr query has [PROPERTIES] [-n | --not] [-c | --count] [-o | --output]
 
   ```
   purr query has --icon --not
+  ```
+
+- List ports with categories of `application_launcher` and `system`.
+
+  ```
+  purr query has --category application_launcher,system
   ```
 
 #### `stars`
@@ -184,14 +186,10 @@ purr init [PROPERTIES]
 #### `query`
 
 ```
-purr userstyles query [-c | --count] [-o | --output]
+purr userstyles query [-c | --count]
 ```
 
 Query the userstyles.yml data source. With no arguments the names of the userstyles are displayed.
-
-##### `-o` / `--output`
-
-Both query commands can be used with the `-o`/`--output` option to change the output format to either `json` and `plain` (defaults to `json`).
 
 ##### `--count`
 
@@ -200,7 +198,7 @@ Count the number of userstyles.
 ##### `maintained`
 
 ```
-purr userstyles query maintained [--by <NAME>] [-n | --not] [-c | --count] [-o | --output]
+purr userstyles query maintained [--by <NAME>] [-n | --not] [-c | --count]
 ```
 
 **Examples**:
@@ -256,7 +254,7 @@ purr userstyles query maintained [--by <NAME>] [-n | --not] [-c | --count] [-o |
 ##### `has`
 
 ```
-purr userstyles query has [PROPERTIES] [-n | --not] [-c | --count] [-o | --output]
+purr userstyles query has [PROPERTIES] [-n | --not] [-c | --count]
 ```
 
 **Properties:**
