@@ -97,7 +97,7 @@ purr query maintained [--by <NAME>] [-n | --not] [-c | --count] [-o | --output]
 #### `has`
 
 ```
-purr query has [PROPERTIES] [-n | --not] [-c | --count] [-l | --list] [-o | --output]
+purr query has [PROPERTIES] [-n | --not] [-c | --count] [-o | --output]
 ```
 
 **Properties:**
@@ -110,34 +110,28 @@ purr query has [PROPERTIES] [-n | --not] [-c | --count] [-l | --list] [-o | --ou
 
 **Examples**:
 
-- Check if userstyles exist with `color` set to `mauve`.
+- List ports with `color` set to `mauve`.
 
   ```
-  purr userstyles query has --color mauve
+  purr query has --color mauve
   ```
 
-- List userstyles that have `color` set to `mauve`.
+- Count the number of ports that have `color` set to `mauve`.
 
   ```
-  purr userstyles query has --color mauve --list
+  purr query has --color mauve --count
   ```
 
-- Count the number of userstyles that have `color` set to `mauve`.
+- Count the number of ports that have `color` set to anything other than `mauve`.
 
   ```
-  purr userstyles query has --color mauve --count
+  purr query has --color mauve --not --count
   ```
 
-- Count the number of userstyles that have `color` set to anything other than `mauve`.
+- List ports that do not have `icon` defined.
 
   ```
-  purr userstyles query has --color mauve --not --count
-  ```
-
-- List userstyles that do not have `icon` defined.
-
-  ```
-  purr userstyles query has --icon --not --list
+  purr query has --icon --not
   ```
 
 #### `stars`
@@ -262,7 +256,7 @@ purr userstyles query maintained [--by <NAME>] [-n | --not] [-c | --count] [-o |
 ##### `has`
 
 ```
-purr userstyles query has [PROPERTIES] [-n | --not] [-c | --count] [-l | --list] [-o | --output]
+purr userstyles query has [PROPERTIES] [-n | --not] [-c | --count] [-o | --output]
 ```
 
 **Properties:**
@@ -275,16 +269,10 @@ purr userstyles query has [PROPERTIES] [-n | --not] [-c | --count] [-l | --list]
 
 **Examples**:
 
-- Check if userstyles exist with `color` set to `mauve`.
+- List userstyles with `color` set to `mauve`.
 
   ```
   purr userstyles query has --color mauve
-  ```
-
-- List userstyles that have `color` set to `mauve`.
-
-  ```
-  purr userstyles query has --color mauve --list
   ```
 
 - Count the number of userstyles that have `color` set to `mauve`.
@@ -302,7 +290,7 @@ purr userstyles query has [PROPERTIES] [-n | --not] [-c | --count] [-l | --list]
 - List userstyles that do not have `icon` defined.
 
   ```
-  purr userstyles query has --icon --not --list
+  purr userstyles query has --icon --not
   ```
 
 #### `init`
