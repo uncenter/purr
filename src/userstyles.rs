@@ -195,11 +195,11 @@ pub fn init(
 			.unwrap()
 	});
 
-	let new_directory = cwd.join(path::PathBuf::from("styles/".to_string() + &name_kebab));
-	if new_directory.exists() {
+	let target = cwd.join(path::PathBuf::from("styles/".to_string() + &name_kebab));
+	if target.exists() {
 		bail!("Userstyle already exists",)
 	} else {
-		fs::create_dir(&new_directory)?;
+		fs::create_dir(&target)?;
 	}
 
 	let mut template: String = reqwest::blocking::get(
@@ -224,7 +224,7 @@ pub fn init(
 	template = comment_re.replace_all(&template, "").to_string();
 
 	fs::write(
-		new_directory.join(path::PathBuf::from("catppuccin.user.css")),
+		target.join(path::PathBuf::from("catppuccin.user.css")),
 		&template,
 	)?;
 

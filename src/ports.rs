@@ -1,4 +1,4 @@
-use std::{env, fs, path};
+use std::{env, fs, io, path};
 
 use color_eyre::eyre::{bail, Result};
 use convert_case::Casing;
@@ -149,7 +149,7 @@ pub fn init(name: Option<String>, url: Option<String>) -> Result<()> {
 	});
 	let name_kebab = name.to_case(convert_case::Case::Kebab);
 
-	let _url = url.unwrap_or_else(|| {
+	let url = url.unwrap_or_else(|| {
 		Text::new("What is the URL of this port?")
 			.with_validator(|input: &str| {
 				if Url::parse(input).is_ok() {
@@ -162,14 +162,48 @@ pub fn init(name: Option<String>, url: Option<String>) -> Result<()> {
 			.unwrap()
 	});
 
-	let new_directory = env::current_dir()?.join(path::PathBuf::from(&name_kebab));
-	if new_directory.exists() {
+	let target = env::current_dir()?.join(path::PathBuf::from(&name_kebab));
+	if target.exists() {
 		bail!("Directory already exists",)
 	} else {
-		fs::create_dir(&new_directory)?;
-	}
+		let client = reqwest::blocking::Client::new();
+		let response = client
+			.get("https://api.github.com/repos/catppuccin/template/tarball")
+			.header(reqwest::header::USER_AGENT, "catppuccin-purr")
+			.send()?;
 
-	/* Fetch template and write to directory */
+		let temp = env::temp_dir();
+		let tarball = temp.join("repo.tar.gz");
+		let mut tarball_file = fs::File::create(&tarball)?;
+		io::copy(&mut response.bytes()?.as_ref(), &mut tarball_file)?;
+		let tar_gz = fs::File::open(tarball)?;
+		let tar = flate2::read::GzDecoder::new(tar_gz);
+		let mut archive = tar::Archive::new(tar);
+		let temp_unpacked = temp.join("unpacked");
+		archive.unpack(&temp_unpacked)?;
+
+		for entry in fs::read_dir(&temp_unpacked)? {
+			let entry = entry?;
+			let path = entry.path();
+			fs::rename(path, &target)?;
+		}
+
+		let readme = &target.join("README.md");
+		let contents = fs::read_to_string(&readme)?
+			.replace(
+				"<a href=\"https://github.com/catppuccin/template\">App</a>",
+				&format!("<a href=\"{}\">{}</a>", url, name),
+			)
+			.replace(
+				"catppuccin/template",
+				&format!("catppuccin/{}", &name_kebab),
+			)
+			.replace(
+				"https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/previews/",
+				"assets/",
+			);
+		fs::write(readme, contents)?;
+	}
 
 	Ok(())
 }

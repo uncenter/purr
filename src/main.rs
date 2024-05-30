@@ -15,7 +15,7 @@ fn main() -> Result<()> {
 			count,
 			output,
 		} => ports::query(command, count, output)?,
-		Commands::Init { name: _, url: _ } => todo!(),
+		Commands::Init { name, url } => ports::init(name, url)?,
 		Commands::Userstyles { command } => match command {
 			Userstyles::Query {
 				command,

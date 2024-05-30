@@ -140,6 +140,19 @@ purr query has [PROPERTIES] [-n | --not] [-c | --count] [-l | --list] [-o | --ou
   purr userstyles query has --icon --not --list
   ```
 
+### `init`
+
+The `init` command accepts each value (name, categories, etc.) via arguments, though if not provided a series of prompts will be displayed instead.
+
+```
+purr init [PROPERTIES]
+```
+
+**Properties**:
+
+- `--name <NAME>`
+- `--url <URL>`
+
 ### `userstyles`
 
 #### `query`
@@ -282,7 +295,6 @@ purr userstyles init [PROPERTIES]
 - [ ] Query contributors
 - [ ] Query maintainers
 - [ ] Query PRs (per userstyle, dated/at what time, by who)
-- [ ] Init https://github.com/catppuccin/template
 
 ## License
 
