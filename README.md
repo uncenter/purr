@@ -180,7 +180,7 @@ purr query stars [--for <REPOSITORY>] [--archived]
 #### `whiskers`
 
 ```
-purr query whiskers [--is <STATE>] [-n | --not] [-c | --count]
+purr query whiskers [--is <STATE>] [-n | --not] [-c | --count | -p | --percentage]
 ```
 
 <details>
@@ -202,6 +202,12 @@ purr query whiskers [--is <STATE>] [-n | --not] [-c | --count]
 
   ```
   purr query whiskers --is not-applicable
+  ```
+
+- Get the percentage of the organization that has been Whiskersified.
+
+  ```
+  purr query whiskers --is true --percentage
   ```
 
 </details>
