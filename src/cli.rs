@@ -79,8 +79,11 @@ pub enum Query {
 		#[arg(long, env = "GITHUB_TOKEN")]
 		token: String,
 
-		#[arg(short, long, name = "STATE")]
-		is: WhiskersCustomProperty,
+		#[arg(long, name = "REPOSITORY", conflicts_with_all = ["count", "percentage"])]
+		r#for: Option<String>,
+
+		#[arg(short, long, name = "STATE", required_unless_present = "REPOSITORY")]
+		is: Option<WhiskersCustomProperty>,
 
 		#[arg(short, long)]
 		not: bool,

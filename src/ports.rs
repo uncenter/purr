@@ -156,47 +156,66 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 			}
 		},
 		Some(Query::Whiskers {
+			r#for,
 			is,
 			not,
 			count,
 			token,
 			percentage,
 		}) => {
-			let repositories = paginate_repositories(token.to_string())?;
-			let result = repositories
-				.iter()
-				.flatten()
-				.filter_map(|repository| {
-					let props = github::rest(
-						&format!("repos/catppuccin/{}/properties/values", &repository.name),
-						Some(token.clone()),
-					)
-					.unwrap()
-					.json::<Vec<CustomProperty>>()
-					.unwrap();
-
-					for prop in props {
-						if prop.property_name == "whiskers" {
-							let matches = prop.value == is.to_string();
-
-							return if not != matches {
-								Some(Value::String(repository.name.to_string()))
-							} else {
-								None
-							};
-						}
-					}
-					None
-				})
-				.collect::<Vec<_>>();
-
-			if percentage {
-				println!(
-					"{:.2}%",
-					(result.len() as f32 / repositories.len() as f32) * 100.0
+			fn check_whiskers_status(repository: String, token: String) -> Result<String> {
+				let props = github::rest(
+					&format!("repos/catppuccin/{}/properties/values", repository),
+					Some(token),
 				)
+				.unwrap()
+				.json::<Vec<CustomProperty>>()
+				.unwrap();
+
+				for prop in props {
+					if prop.property_name == "whiskers" {
+						return Ok(prop.value);
+					}
+				}
+
+				bail!("whiskers custom property should exist on all repositories")
+			}
+			if let Some(repository) = r#for {
+				let status = check_whiskers_status(repository, token)?;
+				println!(
+					"{}",
+					if let Some(is) = is {
+						let matches = status == is.to_string();
+						if not { !matches } else { matches }.to_string()
+					} else {
+						status
+					}
+				);
 			} else {
-				display_list_or_count(result, count)?;
+				let repositories = paginate_repositories(token.to_string())?;
+				let result = repositories
+					.iter()
+					.flatten()
+					.filter_map(|repository| {
+						let status =
+							check_whiskers_status(repository.name.to_string(), token.clone())
+								.unwrap();
+						if status == is.expect("is required without for").to_string() {
+							Some(Value::String(repository.name.to_string()))
+						} else {
+							None
+						}
+					})
+					.collect::<Vec<_>>();
+
+				if percentage {
+					println!(
+						"{:.2}%",
+						(result.len() as f32 / repositories.len() as f32) * 100.0
+					)
+				} else {
+					display_list_or_count(result, count)?;
+				}
 			}
 		}
 		None => {
