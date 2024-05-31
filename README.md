@@ -28,7 +28,7 @@ purr <COMMAND> [-h | --help] [-V | --version]
 purr query [-c | --count]
 ```
 
-Query the ports.yml data source. With no arguments the names of the ports are displayed.
+Query the ports.yml data source. With no arguments, the names of the ports (or count) are displayed.
 
 #### `--count`
 
@@ -40,7 +40,8 @@ Count the number of ports.
 purr query maintained [--by <NAME>] [-n | --not] [-c | --count]
 ```
 
-**Examples**:
+<details>
+<summary>Examples</summary>
 
 - List maintained ports.
 
@@ -90,6 +91,8 @@ purr query maintained [--by <NAME>] [-n | --not] [-c | --count]
   purr query maintained --by "<username>" --not --count
   ```
 
+</details>
+
 #### `has`
 
 ```
@@ -104,7 +107,8 @@ purr query has [PROPERTIES] [-n | --not] [-c | --count]
 - `--color <COLOR>`
 - `--url <URL>`
 
-**Examples**:
+<details>
+<summary>Examples</summary>
 
 - List ports with `color` set to `mauve`.
 
@@ -136,13 +140,16 @@ purr query has [PROPERTIES] [-n | --not] [-c | --count]
   purr query has --category application_launcher,system
   ```
 
+</details>
+
 #### `stars`
 
 ```
 purr query stars [--for <REPOSITORY>] [--archived]
 ```
 
-**Examples**:
+<details>
+<summary>Examples</summary>
 
 - Get the total stars for all repositories across the organization.
 
@@ -167,6 +174,37 @@ purr query stars [--for <REPOSITORY>] [--archived]
   ```
   purr query stars --for "<repository>"
   ```
+
+</details>
+
+#### `whiskers`
+
+```
+purr query whiskers [--is <STATE>] [-n | --not] [-c | --count]
+```
+
+<details>
+<summary>Examples</summary>
+
+- List Whiskerified repositories.
+
+  ```
+  purr query whiskers --is true
+  ```
+
+- List non-Whiskerified repositories.
+
+  ```
+  purr query whiskers --is true --not
+  ```
+
+- List repositories Whiskers is not applicable for.
+
+  ```
+  purr query whiskers --is not-applicable
+  ```
+
+</details>
 
 ### `init`
 
@@ -201,7 +239,8 @@ Count the number of userstyles.
 purr userstyles query maintained [--by <NAME>] [-n | --not] [-c | --count]
 ```
 
-**Examples**:
+<details>
+<summary>Examples</summary>
 
 - List maintained userstyles.
 
@@ -251,6 +290,8 @@ purr userstyles query maintained [--by <NAME>] [-n | --not] [-c | --count]
   purr userstyles query maintained --by "<username>" --not --count
   ```
 
+</details>
+
 ##### `has`
 
 ```
@@ -265,7 +306,8 @@ purr userstyles query has [PROPERTIES] [-n | --not] [-c | --count]
 - `--color <COLOR>`
 - `--app-link <APP_LINK>`
 
-**Examples**:
+<details>
+<summary>Examples</summary>
 
 - List userstyles with `color` set to `mauve`.
 
@@ -290,6 +332,8 @@ purr userstyles query has [PROPERTIES] [-n | --not] [-c | --count]
   ```
   purr userstyles query has --icon --not
   ```
+
+</details>
 
 #### `init`
 

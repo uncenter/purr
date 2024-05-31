@@ -64,17 +64,27 @@ pub fn paginate_repositories(
 	return Ok(repos);
 }
 
-pub fn rest(path: &str) -> Result<reqwest::blocking::Response> {
+pub fn rest(path: &str, token: Option<String>) -> Result<reqwest::blocking::Response> {
 	let client = reqwest::blocking::Client::new();
-	let response = client
+	let request = client
 		.get(format!("https://api.github.com/{}", path))
-		.header(reqwest::header::USER_AGENT, "catppuccin-purr")
-		.send()?;
-
-	Ok(response)
+		.header(reqwest::header::USER_AGENT, "catppuccin-purr");
+	if let Some(token) = token {
+		Ok(request
+			.header(reqwest::header::AUTHORIZATION, format!("Bearer {}", token))
+			.send()?)
+	} else {
+		Ok(request.send()?)
+	}
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RepositoryResponse {
 	pub stargazers_count: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CustomProperty {
+	pub property_name: String,
+	pub value: String,
 }

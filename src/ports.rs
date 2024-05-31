@@ -4,10 +4,11 @@ use color_eyre::eyre::{bail, Result};
 use convert_case::Casing;
 use inquire::validator::Validation;
 use inquire::Text;
+use serde_json::Value;
 use url::Url;
 
 use crate::cli::{Key, Query};
-use crate::github::{self, paginate_repositories, RepositoryResponse};
+use crate::github::{self, paginate_repositories, CustomProperty, RepositoryResponse};
 use crate::models::ports::Root;
 use crate::models::shared::StringOrStrings;
 use crate::{booleanish_match, display_list_or_count, get_key, matches_current_maintainer};
@@ -128,7 +129,7 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 			token,
 		}) => match r#for {
 			Some(repository) => {
-				let data = github::rest(&format!("repos/catppuccin/{}", repository))?
+				let data = github::rest(&format!("repos/catppuccin/{}", repository), Some(token))?
 					.json::<RepositoryResponse>()?;
 
 				println!("{}", data.stargazers_count)
@@ -154,6 +155,41 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 				println!("{}", stars)
 			}
 		},
+		Some(Query::Whiskers {
+			is,
+			not,
+			count,
+			token,
+		}) => {
+			let result = paginate_repositories(token.to_string())?
+				.iter()
+				.flatten()
+				.filter_map(|repository| {
+					let props = github::rest(
+						&format!("repos/catppuccin/{}/properties/values", &repository.name),
+						Some(token.clone()),
+					)
+					.unwrap()
+					.json::<Vec<CustomProperty>>()
+					.unwrap();
+
+					for prop in props {
+						if prop.property_name == "whiskers" {
+							let matches = prop.value == is.to_string();
+
+							return if if not { !matches } else { matches } {
+								Some(Value::String(repository.name.to_string()))
+							} else {
+								None
+							};
+						}
+					}
+					None
+				})
+				.collect::<Vec<_>>();
+
+			display_list_or_count(result, count)?;
+		}
 		None => {
 			let result = data
 				.ports
@@ -193,7 +229,7 @@ pub fn init(name: Option<String>, url: Option<String>) -> Result<()> {
 	if target.exists() {
 		bail!("Directory already exists",)
 	} else {
-		let response = github::rest("repos/catppuccin/template/tarball")?;
+		let response = github::rest("repos/catppuccin/template/tarball", None)?;
 
 		let temp = env::temp_dir();
 		let tarball = temp.join("repo.tar.gz");

@@ -75,6 +75,19 @@ pub enum Query {
 		#[command(flatten)]
 		options: ExtraOptions,
 	},
+	Whiskers {
+		#[arg(long, env = "GITHUB_TOKEN")]
+		token: String,
+
+		#[arg(short, long, name = "STATE")]
+		is: WhiskersCustomProperty,
+
+		#[arg(short, long)]
+		not: bool,
+
+		#[arg(short, long)]
+		count: bool,
+	},
 	Stars {
 		#[arg(long, name = "REPOSITORY", conflicts_with = "archived")]
 		r#for: Option<String>,
@@ -202,6 +215,14 @@ impl Default for UserstyleKey {
 	fn default() -> Self {
 		UserstyleKey::Identifier
 	}
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, strum::Display)]
+#[strum(serialize_all = "snake_case")]
+pub enum WhiskersCustomProperty {
+	True,
+	False,
+	NotApplicable,
 }
 
 fn valid_url(u: &str) -> Result<String, String> {
