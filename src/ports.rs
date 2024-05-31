@@ -179,7 +179,7 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 						if prop.property_name == "whiskers" {
 							let matches = prop.value == is.to_string();
 
-							return if if not { !matches } else { matches } {
+							return if not != matches {
 								Some(Value::String(repository.name.to_string()))
 							} else {
 								None
