@@ -69,13 +69,14 @@ pub fn rest(path: &str, token: Option<String>) -> Result<reqwest::blocking::Resp
 	let request = client
 		.get(format!("https://api.github.com/{}", path))
 		.header(reqwest::header::USER_AGENT, "catppuccin-purr");
-	if let Some(token) = token {
-		Ok(request
+	Ok(if let Some(token) = token {
+		request
 			.header(reqwest::header::AUTHORIZATION, format!("Bearer {}", token))
-			.send()?)
+			.send()?
 	} else {
-		Ok(request.send()?)
+		request.send()?
 	}
+	.error_for_status()?)
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
