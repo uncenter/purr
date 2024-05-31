@@ -160,8 +160,10 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 			not,
 			count,
 			token,
+			percentage,
 		}) => {
-			let result = paginate_repositories(token.to_string())?
+			let repositories = paginate_repositories(token.to_string())?;
+			let result = repositories
 				.iter()
 				.flatten()
 				.filter_map(|repository| {
@@ -188,7 +190,14 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 				})
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, count)?;
+			if percentage {
+				println!(
+					"{:.2}%",
+					(result.len() as f32 / repositories.len() as f32) * 100.0
+				)
+			} else {
+				display_list_or_count(result, count)?;
+			}
 		}
 		None => {
 			let result = data

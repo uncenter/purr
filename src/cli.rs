@@ -87,6 +87,9 @@ pub enum Query {
 
 		#[arg(short, long)]
 		count: bool,
+
+		#[arg(short, long, conflicts_with = "count")]
+		percentage: bool,
 	},
 	Stars {
 		#[arg(long, name = "REPOSITORY", conflicts_with = "archived")]
