@@ -73,7 +73,7 @@ pub enum Query {
 		by: Option<String>,
 
 		#[command(flatten)]
-		options: ExtraOptions,
+		options: ExtraOptions<Key>,
 	},
 	Whiskers {
 		#[arg(long, env = "GITHUB_TOKEN")]
@@ -130,7 +130,7 @@ pub enum Query {
 		url: Option<String>,
 
 		#[command(flatten)]
-		options: ExtraOptions,
+		options: ExtraOptions<Key>,
 	},
 }
 
@@ -141,7 +141,7 @@ pub enum UserstylesQuery {
 		by: Option<String>,
 
 		#[command(flatten)]
-		options: ExtraUserstyleOptions,
+		options: ExtraOptions<UserstyleKey>,
 	},
 	Has {
 		#[arg(long)]
@@ -160,12 +160,14 @@ pub enum UserstylesQuery {
 		app_link: Option<String>,
 
 		#[command(flatten)]
-		options: ExtraUserstyleOptions,
+		options: ExtraOptions<UserstyleKey>,
 	},
 }
 
 #[derive(Args)]
-pub struct ExtraOptions {
+pub struct ExtraOptions<
+	T: std::marker::Send + std::marker::Sync + std::default::Default + clap::ValueEnum + 'static,
+> {
 	#[arg(short, long)]
 	pub not: bool,
 
@@ -173,19 +175,7 @@ pub struct ExtraOptions {
 	pub count: bool,
 
 	#[arg(short, long, value_enum, default_value_t)]
-	pub get: Key,
-}
-
-#[derive(Args)]
-pub struct ExtraUserstyleOptions {
-	#[arg(short, long)]
-	pub not: bool,
-
-	#[arg(short, long)]
-	pub count: bool,
-
-	#[arg(short, long, value_enum, default_value_t)]
-	pub get: UserstyleKey,
+	pub get: T,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
