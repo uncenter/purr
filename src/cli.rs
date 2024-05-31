@@ -165,9 +165,7 @@ pub enum UserstylesQuery {
 }
 
 #[derive(Args)]
-pub struct ExtraOptions<
-	T: std::marker::Send + std::marker::Sync + std::default::Default + clap::ValueEnum + 'static,
-> {
+pub struct ExtraOptions<K: Send + Sync + Default + ValueEnum + 'static> {
 	#[arg(short, long)]
 	pub not: bool,
 
@@ -175,7 +173,7 @@ pub struct ExtraOptions<
 	pub count: bool,
 
 	#[arg(short, long, value_enum, default_value_t)]
-	pub get: T,
+	pub get: K,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
