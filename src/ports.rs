@@ -167,10 +167,8 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 				let props = github::rest(
 					&format!("repos/catppuccin/{}/properties/values", repository),
 					Some(token),
-				)
-				.unwrap()
-				.json::<Vec<CustomProperty>>()
-				.unwrap();
+				)?
+				.json::<Vec<CustomProperty>>()?;
 
 				for prop in props {
 					if prop.property_name == "whiskers" {
