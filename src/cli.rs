@@ -81,6 +81,9 @@ pub enum Query {
 
 		#[arg(long)]
 		archived: bool,
+
+		#[arg(long, env = "GITHUB_TOKEN")]
+		token: String,
 	},
 	Has {
 		#[arg(long)]

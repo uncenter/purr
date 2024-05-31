@@ -122,7 +122,11 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 
 			display_list_or_count(result, options.count)?;
 		}
-		Some(Query::Stars { r#for, archived }) => match r#for {
+		Some(Query::Stars {
+			r#for,
+			archived,
+			token,
+		}) => match r#for {
 			Some(repository) => {
 				let data = github::rest(&format!("repos/catppuccin/{}", repository))?
 					.json::<RepositoryResponse>()?;
@@ -130,7 +134,7 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 				println!("{}", data.stargazers_count)
 			}
 			None => {
-				let repositories = paginate_repositories()?;
+				let repositories = paginate_repositories(token)?;
 
 				let stars: i64 = repositories
 					.iter()

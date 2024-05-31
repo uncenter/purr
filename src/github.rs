@@ -1,5 +1,3 @@
-use std::env;
-
 use color_eyre::Result;
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use repositories::{
@@ -36,17 +34,14 @@ pub fn repositories(
 }
 
 pub fn paginate_repositories(
+	token: String,
 ) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>, Error> {
 	let client = Client::builder()
 		.user_agent("graphql-rust/0.10.0")
 		.default_headers(
 			std::iter::once((
 				reqwest::header::AUTHORIZATION,
-				reqwest::header::HeaderValue::from_str(&format!(
-					"Bearer {}",
-					env::var("GITHUB_TOKEN").unwrap()
-				))
-				.unwrap(),
+				reqwest::header::HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
 			))
 			.collect(),
 		)
