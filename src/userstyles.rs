@@ -27,7 +27,7 @@ pub fn query(command: Option<UserstylesQuery>, count: bool, get: UserstyleKey) -
 				.userstyles
 				.into_iter()
 				.filter(|userstyle| {
-					let current_maintainers = &userstyle.1.readme.current_maintainers;
+					let current_maintainers = &userstyle.1.current_maintainers;
 					let matches = matches_current_maintainer(current_maintainers, by.to_owned());
 
 					if options.not {
@@ -227,9 +227,9 @@ pub fn init(
 		color: color,
 		readme: Readme {
 			app_link: StringOrStrings::Single(url),
-			current_maintainers: vec![],
-			past_maintainers: None,
 		},
+		current_maintainers: vec![],
+		past_maintainers: None,
 	};
 	let mut bare = HashMap::new();
 	bare.insert(name_kebab, metadata);
