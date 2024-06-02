@@ -25,10 +25,18 @@ purr <COMMAND> [-h | --help] [-V | --version]
 ### `query`
 
 ```
-purr query [-c | --count]
+purr query [--for <PORT>] [-g | --get] [-c | --count]
 ```
 
-Query the ports.yml data source. With no arguments, the names of the ports (or count) are displayed.
+Query the ports.yml data source. With no arguments, all ports are displayed.
+
+#### `--for <PORT>`
+
+Query about a specific port.
+
+#### `-g` / `--get`
+
+Get a specific data point for all ports (or for a specific port if used with `--for`).
 
 #### `--count`
 
@@ -212,6 +220,14 @@ purr query whiskers [--is <STATE>] [-n | --not] [-c | --count | -p | --percentag
 
 </details>
 
+### `whiskerify`
+
+```
+purr whiskerify <PATH> [--dry-run]
+```
+
+Whiskerify a specific file by replacing Catppuccin colors with Tera expressions. Writes back to the original file unless `--dry-run` is passed.
+
 ### `init`
 
 The `init` command accepts each value (name, categories, etc.) via arguments, though if not provided a series of prompts will be displayed instead.
@@ -230,10 +246,18 @@ purr init [PROPERTIES]
 #### `query`
 
 ```
-purr userstyles query [-c | --count]
+purr userstyles query [--for <USERSTYLE>] [-g | --get] [-c | --count]
 ```
 
-Query the userstyles.yml data source. With no arguments the names of the userstyles are displayed.
+Query the userstyles.yml data source. With no arguments, all userstyles are displayed.
+
+##### `--for <USERSTYLE>`
+
+Query data about a specific userstyle.
+
+##### `-g` / `--get`
+
+Get a specific data point for all userstyles (or for a specific userstyle if used with `--for`).
 
 ##### `--count`
 

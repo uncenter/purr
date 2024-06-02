@@ -19,7 +19,7 @@ pub enum Commands {
 		#[command(subcommand)]
 		command: Option<Query>,
 
-		#[arg(long, name = "REPOSITORY", conflicts_with = "count", requires = "get")]
+		#[arg(long, name = "PORT", conflicts_with = "count", requires = "get")]
 		r#for: Option<String>,
 
 		#[arg(short, long)]
@@ -53,7 +53,7 @@ pub enum Userstyles {
 		#[command(subcommand)]
 		command: Option<UserstylesQuery>,
 
-		#[arg(long, name = "REPOSITORY", conflicts_with = "count", requires = "get")]
+		#[arg(long, name = "USERSTYLE", conflicts_with = "count", requires = "get")]
 		r#for: Option<String>,
 
 		#[arg(short, long)]
