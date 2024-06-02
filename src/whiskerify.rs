@@ -9,7 +9,7 @@ pub fn convert(path: PathBuf, dry_run: bool) -> Result<()> {
 		for color in &flavor.colors {
 			contents = contents.replace(
 				&color.hex.to_string(),
-				&format!("{}{}{}", "{{ ", color.identifier(), ".hex }}"),
+				&format!("#{}{}{}", "{{ ", color.identifier(), ".hex }}"),
 			);
 		}
 	}
