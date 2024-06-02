@@ -31,13 +31,13 @@ purr <COMMAND> [-h | --help] [-V | --version]
   - [`has`](#has)
   - [`stars`](#stars)
   - [`whiskers`](#whiskers)
-- [`whiskerify`](#whiskerify)
 - [`init`](#init)
 - [`userstyles`](#userstyles)
   - [`query`](#query-1)
     - [`maintained`](#maintained-1)
     - [`has`](#has-1)
   - [`init`](#init-1)
+- [`whiskerify`](#whiskerify)
 
 ### `query`
 
@@ -261,14 +261,6 @@ purr query whiskers [--is <STATE>] [-n | --not] [-c | --count | -p | --percentag
 
 </details>
 
-### `whiskerify`
-
-```
-purr whiskerify <PATH> [--dry-run]
-```
-
-Whiskerify a specific file by replacing Catppuccin colors with Tera expressions. Writes back to the original file unless `--dry-run` is passed.
-
 ### `init`
 
 The `init` command accepts each value (name, categories, etc.) via arguments, though if not provided a series of prompts will be displayed instead.
@@ -439,6 +431,15 @@ purr userstyles init [PROPERTIES]
 - `--icon <ICON>`
 - `--color <COLOR>`
 - `--app-link <APP_LINK>`
+
+
+### `whiskerify`
+
+```
+purr whiskerify <PATH> [-o | --output <PATH>]
+```
+
+Whiskerify a file by replacing Catppuccin colors and names with Tera expressions. Prints the output or writes to the `--output` file path if passed.
 
 ## License
 
