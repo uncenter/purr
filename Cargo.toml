@@ -1,5 +1,5 @@
 [package]
-name = "purr"
+name = "catppuccin-purr"
 version = "0.1.0"
 authors = ["uncenter <uncenter@uncenter.dev>"]
 license = "MIT"

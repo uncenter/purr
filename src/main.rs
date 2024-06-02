@@ -1,9 +1,9 @@
+use catppuccin_purr::{
+	cli::{Cli, Commands, Userstyles},
+	ports, userstyles, whiskerify,
+};
 use clap::Parser;
 use color_eyre::eyre::Result;
-use purr::{
-	cli::{Cli, Commands, Userstyles},
-	ports, userstyles,
-};
 
 fn main() -> Result<()> {
 	color_eyre::install()?;
@@ -12,16 +12,18 @@ fn main() -> Result<()> {
 	match args.command {
 		Commands::Query {
 			command,
+			r#for,
 			count,
 			get,
-		} => ports::query(command, count, get)?,
+		} => ports::query(command, r#for, count, get)?,
 		Commands::Init { name, url } => ports::init(name, url)?,
 		Commands::Userstyles { command } => match command {
 			Userstyles::Query {
 				command,
+				r#for,
 				count,
 				get,
-			} => userstyles::query(command, count, get)?,
+			} => userstyles::query(command, r#for, count, get)?,
 			Userstyles::Init {
 				name,
 				categories,
@@ -30,6 +32,7 @@ fn main() -> Result<()> {
 				url,
 			} => userstyles::init(name, categories, icon, color, url)?,
 		},
+		Commands::Whiskerify { path, dry_run } => whiskerify::convert(path, dry_run)?,
 	}
 
 	Ok(())

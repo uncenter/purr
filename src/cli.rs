@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{arg, Args, Parser, Subcommand, ValueEnum};
 use color_eyre::owo_colors::OwoColorize;
 use url::Url;
@@ -17,6 +19,9 @@ pub enum Commands {
 		#[command(subcommand)]
 		command: Option<Query>,
 
+		#[arg(long, name = "PORT", conflicts_with = "count", requires = "get")]
+		r#for: Option<String>,
+
 		#[arg(short, long)]
 		count: bool,
 
@@ -34,6 +39,12 @@ pub enum Commands {
 		#[command(subcommand)]
 		command: Userstyles,
 	},
+	Whiskerify {
+		path: PathBuf,
+
+		#[arg(short, long)]
+		dry_run: bool,
+	},
 }
 
 #[derive(Subcommand)]
@@ -41,6 +52,9 @@ pub enum Userstyles {
 	Query {
 		#[command(subcommand)]
 		command: Option<UserstylesQuery>,
+
+		#[arg(long, name = "USERSTYLE", conflicts_with = "count", requires = "get")]
+		r#for: Option<String>,
 
 		#[arg(short, long)]
 		count: bool,
@@ -76,13 +90,10 @@ pub enum Query {
 		options: ExtraOptions<Key>,
 	},
 	Whiskers {
-		#[arg(long, env = "GITHUB_TOKEN")]
-		token: String,
-
-		#[arg(long, name = "REPOSITORY", conflicts_with_all = ["count", "percentage"])]
+		#[arg(long, name = "REPOSITORY", conflicts_with_all = ["count"])]
 		r#for: Option<String>,
 
-		#[arg(short, long, name = "STATE", required_unless_present = "REPOSITORY")]
+		#[arg(short, long, name = "STATE")]
 		is: Option<WhiskersCustomProperty>,
 
 		#[arg(short, long)]
@@ -91,8 +102,8 @@ pub enum Query {
 		#[arg(short, long)]
 		count: bool,
 
-		#[arg(short, long, conflicts_with = "count")]
-		percentage: bool,
+		#[arg(long, env = "GITHUB_TOKEN")]
+		token: String,
 	},
 	Stars {
 		#[arg(long, name = "REPOSITORY", conflicts_with = "archived")]
@@ -187,6 +198,8 @@ pub enum Key {
 	Color,
 	Alias,
 	Url,
+	CurrentMaintainers,
+	PastMaintainers,
 }
 
 impl Default for Key {
@@ -203,6 +216,8 @@ pub enum UserstyleKey {
 	Icon,
 	Color,
 	AppLink,
+	CurrentMaintainers,
+	PastMaintainers,
 }
 
 impl Default for UserstyleKey {

@@ -1,5 +1,5 @@
 use color_eyre::eyre::{Context, Ok, Result};
-use serde_json::Value;
+use serde_json::{json, Value};
 
 use cli::{Key, UserstyleKey};
 use models::{
@@ -13,6 +13,7 @@ pub mod github;
 pub mod models;
 pub mod ports;
 pub mod userstyles;
+pub mod whiskerify;
 
 fn matches_current_maintainer(current_maintainers: &Vec<Maintainer>, by: Option<String>) -> bool {
 	match &by {
@@ -72,6 +73,23 @@ pub fn get_key(entry: (String, Port), key: Key) -> Value {
 		Key::Color => Value::String(entry.1.color),
 		Key::Alias => Value::String(entry.1.alias.expect("alias should exist")),
 		Key::Url => Value::String(entry.1.url.expect("url exist eixst")),
+		Key::CurrentMaintainers => Value::Array(
+			entry
+				.1
+				.current_maintainers
+				.into_iter()
+				.map(|m| json!({ "name": m.name, "url": m.url }))
+				.collect(),
+		),
+		Key::PastMaintainers => Value::Array(
+			entry
+				.1
+				.past_maintainers
+				.into_iter()
+				.flatten()
+				.map(|m| json!({ "name": m.name, "url": m.url }))
+				.collect(),
+		),
 	}
 }
 
@@ -95,5 +113,24 @@ pub fn get_userstyle_key(entry: (String, Userstyle), key: UserstyleKey) -> Value
 				Value::Array(links.into_iter().map(Value::String).collect())
 			}
 		},
+		UserstyleKey::CurrentMaintainers => Value::Array(
+			entry
+				.1
+				.readme
+				.current_maintainers
+				.into_iter()
+				.map(|m| json!({ "name": m.name, "url": m.url }))
+				.collect(),
+		),
+		UserstyleKey::PastMaintainers => Value::Array(
+			entry
+				.1
+				.readme
+				.past_maintainers
+				.into_iter()
+				.flatten()
+				.map(|m| json!({ "name": m.name, "url": m.url }))
+				.collect(),
+		),
 	}
 }

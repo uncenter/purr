@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::{env, fs, path};
 
-use color_eyre::eyre::{bail, Result};
+use color_eyre::eyre::{bail, Context, Result};
 use convert_case::Casing;
 use inquire::validator::Validation;
 use inquire::{MultiSelect, Select, Text};
@@ -14,7 +14,12 @@ use crate::{
 	booleanish_match, display_list_or_count, get_userstyle_key, matches_current_maintainer,
 };
 
-pub fn query(command: Option<UserstylesQuery>, count: bool, get: UserstyleKey) -> Result<()> {
+pub fn query(
+	command: Option<UserstylesQuery>,
+	r#for: Option<String>,
+	count: bool,
+	get: UserstyleKey,
+) -> Result<()> {
 	let raw: String = reqwest::blocking::get(
 		"https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml",
 	)?
@@ -111,13 +116,29 @@ pub fn query(command: Option<UserstylesQuery>, count: bool, get: UserstyleKey) -
 			display_list_or_count(result, options.count)?;
 		}
 		None => {
-			let result = data
-				.userstyles
-				.into_iter()
-				.map(|userstyle| get_userstyle_key(userstyle, get))
-				.collect::<Vec<_>>();
-
-			display_list_or_count(result, count)?;
+			if let Some(r#for) = r#for {
+				println!(
+					"{}",
+					serde_json::to_string_pretty(
+						data.userstyles
+							.into_iter()
+							.filter(|port| port.0 == r#for)
+							.map(|port| get_userstyle_key(port, get))
+							.collect::<Vec<_>>()
+							.first()
+							.unwrap()
+					)
+					.context("Failed to serialize results")?
+				);
+			} else {
+				display_list_or_count(
+					data.userstyles
+						.into_iter()
+						.map(|port| get_userstyle_key(port, get))
+						.collect::<Vec<_>>(),
+					count,
+				)?;
+			}
 		}
 	}
 

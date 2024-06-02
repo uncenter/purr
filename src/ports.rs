@@ -1,19 +1,19 @@
 use std::{env, fs, io, path};
 
-use color_eyre::eyre::{bail, Result};
+use color_eyre::eyre::{bail, Context, Result};
 use convert_case::Casing;
 use inquire::validator::Validation;
 use inquire::Text;
 use serde_json::Value;
 use url::Url;
 
-use crate::cli::{Key, Query};
+use crate::cli::{Key, Query, WhiskersCustomProperty};
 use crate::github::{self, paginate_repositories, CustomProperty, RepositoryResponse};
 use crate::models::ports::Root;
 use crate::models::shared::StringOrStrings;
 use crate::{booleanish_match, display_list_or_count, get_key, matches_current_maintainer};
 
-pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
+pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Key) -> Result<()> {
 	let raw: String = reqwest::blocking::get(
 		"https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml",
 	)?
@@ -161,7 +161,6 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 			not,
 			count,
 			token,
-			percentage,
 		}) => {
 			fn check_whiskers_status(repository: String, token: String) -> Result<String> {
 				let props = github::rest(
@@ -190,26 +189,47 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 					}
 				);
 			} else {
+				let mut found_true = 0;
+				let mut found_false = 0;
+				let mut found_na = 0;
+
 				let repositories = paginate_repositories(token.to_string())?;
 				let result = repositories
 					.iter()
 					.flatten()
+					.filter(|repo| !repo.is_archived)
 					.filter_map(|repository| {
 						let status =
 							check_whiskers_status(repository.name.to_string(), token.clone())
 								.unwrap();
-						if status == is.expect("is required without for").to_string() {
-							Some(Value::String(repository.name.to_string()))
+
+						if status == WhiskersCustomProperty::True.to_string() {
+							found_true += 1;
+						} else if status == WhiskersCustomProperty::False.to_string() {
+							found_false += 1;
+						} else {
+							found_na += 1;
+						}
+
+						if let Some(is) = is {
+							if status == is.to_string() {
+								Some(Value::String(repository.name.to_string()))
+							} else {
+								None
+							}
 						} else {
 							None
 						}
 					})
 					.collect::<Vec<_>>();
 
-				if percentage {
+				if is.is_none() {
 					println!(
-						"{:.2}%",
-						(result.len() as f32 / repositories.len() as f32) * 100.0
+						"true: {}, false: {}, n/a: {} ({:.2}%)",
+						found_true,
+						found_false,
+						found_na,
+						(found_true as f32 / (found_true + found_false) as f32) * 100.0
 					)
 				} else {
 					display_list_or_count(result, count)?;
@@ -217,13 +237,29 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 			}
 		}
 		None => {
-			let result = data
-				.ports
-				.into_iter()
-				.map(|port| get_key(port, get))
-				.collect::<Vec<_>>();
-
-			display_list_or_count(result, count)?;
+			if let Some(r#for) = r#for {
+				println!(
+					"{}",
+					serde_json::to_string_pretty(
+						data.ports
+							.into_iter()
+							.filter(|port| port.0 == r#for)
+							.map(|port| get_key(port, get))
+							.collect::<Vec<_>>()
+							.first()
+							.unwrap()
+					)
+					.context("Failed to serialize results")?
+				);
+			} else {
+				display_list_or_count(
+					data.ports
+						.into_iter()
+						.map(|port| get_key(port, get))
+						.collect::<Vec<_>>(),
+					count,
+				)?;
+			}
 		}
 	}
 
