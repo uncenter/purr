@@ -17,6 +17,9 @@ pub enum Commands {
 		#[command(subcommand)]
 		command: Option<Query>,
 
+		#[arg(long, name = "REPOSITORY", conflicts_with = "count", requires = "get")]
+		r#for: Option<String>,
+
 		#[arg(short, long)]
 		count: bool,
 
@@ -41,6 +44,9 @@ pub enum Userstyles {
 	Query {
 		#[command(subcommand)]
 		command: Option<UserstylesQuery>,
+
+		#[arg(long, name = "REPOSITORY", conflicts_with = "count", requires = "get")]
+		r#for: Option<String>,
 
 		#[arg(short, long)]
 		count: bool,
@@ -184,6 +190,8 @@ pub enum Key {
 	Color,
 	Alias,
 	Url,
+	CurrentMaintainers,
+	PastMaintainers,
 }
 
 impl Default for Key {
@@ -200,6 +208,8 @@ pub enum UserstyleKey {
 	Icon,
 	Color,
 	AppLink,
+	CurrentMaintainers,
+	PastMaintainers,
 }
 
 impl Default for UserstyleKey {

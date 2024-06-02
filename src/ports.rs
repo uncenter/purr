@@ -1,6 +1,6 @@
 use std::{env, fs, io, path};
 
-use color_eyre::eyre::{bail, Result};
+use color_eyre::eyre::{bail, Context, Result};
 use convert_case::Casing;
 use inquire::validator::Validation;
 use inquire::Text;
@@ -13,7 +13,7 @@ use crate::models::ports::Root;
 use crate::models::shared::StringOrStrings;
 use crate::{booleanish_match, display_list_or_count, get_key, matches_current_maintainer};
 
-pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
+pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Key) -> Result<()> {
 	let raw: String = reqwest::blocking::get(
 		"https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml",
 	)?
@@ -237,13 +237,29 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 			}
 		}
 		None => {
-			let result = data
-				.ports
-				.into_iter()
-				.map(|port| get_key(port, get))
-				.collect::<Vec<_>>();
-
-			display_list_or_count(result, count)?;
+			if let Some(r#for) = r#for {
+				println!(
+					"{}",
+					serde_json::to_string_pretty(
+						data.ports
+							.into_iter()
+							.filter(|port| port.0 == r#for)
+							.map(|port| get_key(port, get))
+							.collect::<Vec<_>>()
+							.first()
+							.unwrap()
+					)
+					.context("Failed to serialize results")?
+				);
+			} else {
+				display_list_or_count(
+					data.ports
+						.into_iter()
+						.map(|port| get_key(port, get))
+						.collect::<Vec<_>>(),
+					count,
+				)?;
+			}
 		}
 	}
 

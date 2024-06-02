@@ -12,16 +12,18 @@ fn main() -> Result<()> {
 	match args.command {
 		Commands::Query {
 			command,
+			r#for,
 			count,
 			get,
-		} => ports::query(command, count, get)?,
+		} => ports::query(command, r#for, count, get)?,
 		Commands::Init { name, url } => ports::init(name, url)?,
 		Commands::Userstyles { command } => match command {
 			Userstyles::Query {
 				command,
+				r#for,
 				count,
 				get,
-			} => userstyles::query(command, count, get)?,
+			} => userstyles::query(command, r#for, count, get)?,
 			Userstyles::Init {
 				name,
 				categories,
