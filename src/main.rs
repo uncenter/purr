@@ -1,9 +1,9 @@
-use clap::Parser;
-use color_eyre::eyre::Result;
-use purr::{
+use catppuccin_purr::{
 	cli::{Cli, Commands, Userstyles},
 	ports, userstyles, whiskerify,
 };
+use clap::Parser;
+use color_eyre::eyre::Result;
 
 fn main() -> Result<()> {
 	color_eyre::install()?;
