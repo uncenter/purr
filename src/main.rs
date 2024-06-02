@@ -2,7 +2,7 @@ use clap::Parser;
 use color_eyre::eyre::Result;
 use purr::{
 	cli::{Cli, Commands, Userstyles},
-	ports, userstyles,
+	ports, userstyles, whiskerify,
 };
 
 fn main() -> Result<()> {
@@ -32,6 +32,7 @@ fn main() -> Result<()> {
 				url,
 			} => userstyles::init(name, categories, icon, color, url)?,
 		},
+		Commands::Whiskerify { path, dry_run } => whiskerify::convert(path, dry_run)?,
 	}
 
 	Ok(())

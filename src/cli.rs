@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{arg, Args, Parser, Subcommand, ValueEnum};
 use color_eyre::owo_colors::OwoColorize;
 use url::Url;
@@ -36,6 +38,12 @@ pub enum Commands {
 	Userstyles {
 		#[command(subcommand)]
 		command: Userstyles,
+	},
+	Whiskerify {
+		path: PathBuf,
+
+		#[arg(short, long)]
+		dry_run: bool,
 	},
 }
 

@@ -13,6 +13,7 @@ pub mod github;
 pub mod models;
 pub mod ports;
 pub mod userstyles;
+pub mod whiskerify;
 
 fn matches_current_maintainer(current_maintainers: &Vec<Maintainer>, by: Option<String>) -> bool {
 	match &by {
