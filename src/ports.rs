@@ -8,10 +8,12 @@ use serde_json::Value;
 use url::Url;
 
 use crate::cli::{Key, Query, WhiskersCustomProperty};
-use crate::github::{self, paginate_repositories, CustomProperty, RepositoryResponse};
+use crate::github::{
+	self, fetch_all_repositories, fetch_whiskers_custom_property, RepositoryResponse,
+};
 use crate::models::ports::Root;
 use crate::models::shared::StringOrStrings;
-use crate::{booleanish_match, display_list_or_count, get_key, matches_current_maintainer};
+use crate::{display_json_or_count, get_key, is_booleanish_match, matches_current_maintainer};
 
 pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Key) -> Result<()> {
 	let raw: String = reqwest::blocking::get(
@@ -27,7 +29,7 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 				.into_iter()
 				.filter(|port| {
 					let current_maintainers = &port.1.current_maintainers;
-					let matches = matches_current_maintainer(current_maintainers, by.to_owned());
+					let matches = matches_current_maintainer(current_maintainers, &by);
 
 					if options.not {
 						!matches
@@ -38,7 +40,7 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 				.map(|port| get_key(port, options.get))
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, count)?;
+			display_json_or_count(&result, count)?;
 		}
 		Some(Query::Has {
 			name,
@@ -63,31 +65,29 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 						}
 					} && {
 						if let Some(upstreamed) = &upstreamed {
-							*upstreamed == port.1.upstreamed.or(Some(false)).unwrap()
+							*upstreamed == port.1.upstreamed.unwrap_or(false)
 						} else {
 							true
 						}
 					} && {
 						if let Some(platform) = &platform {
-							platform.into_iter().all(|p| match &port.1.platform {
+							platform.iter().all(|p| match &port.1.platform {
 								StringOrStrings::Single(platform) => *platform == *p,
-								StringOrStrings::Multiple(platforms) => platforms.contains(&p),
+								StringOrStrings::Multiple(platforms) => platforms.contains(p),
 							})
 						} else {
 							true
 						}
 					} && {
 						if let Some(categories) = &categories {
-							categories
-								.into_iter()
-								.all(|c| port.1.categories.contains(&c))
+							categories.iter().all(|c| port.1.categories.contains(c))
 						} else {
 							true
 						}
 					} && {
 						if let Some(icon) = &icon {
 							let value = &port.1.icon;
-							booleanish_match(value.clone(), icon.to_string())
+							is_booleanish_match(value.clone(), icon)
 						} else {
 							true
 						}
@@ -100,13 +100,13 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 					} && {
 						if let Some(alias) = &alias {
 							let value = &port.1.alias;
-							booleanish_match(value.to_owned(), alias.to_string())
+							is_booleanish_match(value.to_owned(), alias)
 						} else {
 							true
 						}
 					} && {
 						if let Some(url) = &url {
-							booleanish_match(port.1.url.clone(), url.to_string())
+							is_booleanish_match(port.1.url.clone(), url)
 						} else {
 							true
 						}
@@ -121,21 +121,20 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 				.map(|port| get_key(port, options.get))
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, options.count)?;
+			display_json_or_count(&result, options.count)?;
 		}
 		Some(Query::Stars {
 			r#for,
 			archived,
 			token,
-		}) => match r#for {
-			Some(repository) => {
-				let data = github::rest(&format!("repos/catppuccin/{}", repository), Some(token))?
+		}) => {
+			if let Some(repository) = r#for {
+				let data = github::rest(&format!("repos/catppuccin/{repository}"), Some(token))?
 					.json::<RepositoryResponse>()?;
 
-				println!("{}", data.stargazers_count)
-			}
-			None => {
-				let repositories = paginate_repositories(token)?;
+				println!("{}", data.stargazers_count);
+			} else {
+				let repositories = fetch_all_repositories(&token)?;
 
 				let stars: i64 = repositories
 					.iter()
@@ -152,9 +151,9 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 					})
 					.sum();
 
-				println!("{}", stars)
+				println!("{stars}");
 			}
-		},
+		}
 		Some(Query::Whiskers {
 			r#for,
 			is,
@@ -162,23 +161,8 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 			count,
 			token,
 		}) => {
-			fn check_whiskers_status(repository: String, token: String) -> Result<String> {
-				let props = github::rest(
-					&format!("repos/catppuccin/{}/properties/values", repository),
-					Some(token),
-				)?
-				.json::<Vec<CustomProperty>>()?;
-
-				for prop in props {
-					if prop.property_name == "whiskers" {
-						return Ok(prop.value);
-					}
-				}
-
-				bail!("whiskers custom property should exist on all repositories")
-			}
 			if let Some(repository) = r#for {
-				let status = check_whiskers_status(repository, token)?;
+				let status = fetch_whiskers_custom_property(&repository, token)?;
 				println!(
 					"{}",
 					if let Some(is) = is {
@@ -193,14 +177,14 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 				let mut found_false = 0;
 				let mut found_na = 0;
 
-				let repositories = paginate_repositories(token.to_string())?;
+				let repositories = fetch_all_repositories(&token)?;
 				let result = repositories
 					.iter()
 					.flatten()
 					.filter(|repo| !repo.is_archived)
 					.filter_map(|repository| {
 						let status =
-							check_whiskers_status(repository.name.to_string(), token.clone())
+							fetch_whiskers_custom_property(&repository.name, token.clone())
 								.unwrap();
 
 						if status == WhiskersCustomProperty::True.to_string() {
@@ -230,9 +214,9 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 						found_false,
 						found_na,
 						(found_true as f32 / (found_true + found_false) as f32) * 100.0
-					)
+					);
 				} else {
-					display_list_or_count(result, count)?;
+					display_json_or_count(&result, count)?;
 				}
 			}
 		}
@@ -252,8 +236,9 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 					.context("Failed to serialize results")?
 				);
 			} else {
-				display_list_or_count(
-					data.ports
+				display_json_or_count(
+					&data
+						.ports
 						.into_iter()
 						.map(|port| get_key(port, get))
 						.collect::<Vec<_>>(),
@@ -290,41 +275,40 @@ pub fn init(name: Option<String>, url: Option<String>) -> Result<()> {
 	let target = env::current_dir()?.join(path::PathBuf::from(&name_kebab));
 	if target.exists() {
 		bail!("Directory already exists",)
-	} else {
-		let response = github::rest("repos/catppuccin/template/tarball", None)?;
-
-		let temp = env::temp_dir();
-		let tarball = temp.join("repo.tar.gz");
-		let mut tarball_file = fs::File::create(&tarball)?;
-		io::copy(&mut response.bytes()?.as_ref(), &mut tarball_file)?;
-		let tar_gz = fs::File::open(tarball)?;
-		let tar = flate2::read::GzDecoder::new(tar_gz);
-		let mut archive = tar::Archive::new(tar);
-		let temp_unpacked = temp.join("unpacked");
-		archive.unpack(&temp_unpacked)?;
-
-		for entry in fs::read_dir(&temp_unpacked)? {
-			let entry = entry?;
-			let path = entry.path();
-			fs::rename(path, &target)?;
-		}
-
-		let readme = &target.join("README.md");
-		let contents = fs::read_to_string(&readme)?
-			.replace(
-				"<a href=\"https://github.com/catppuccin/template\">App</a>",
-				&format!("<a href=\"{}\">{}</a>", url, name),
-			)
-			.replace(
-				"catppuccin/template",
-				&format!("catppuccin/{}", &name_kebab),
-			)
-			.replace(
-				"https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/previews/",
-				"assets/",
-			);
-		fs::write(readme, contents)?;
 	}
+	let response = github::rest("repos/catppuccin/template/tarball", None)?;
+
+	let temp = env::temp_dir();
+	let tarball = temp.join("repo.tar.gz");
+	let mut tarball_file = fs::File::create(&tarball)?;
+	io::copy(&mut response.bytes()?.as_ref(), &mut tarball_file)?;
+	let tar_gz = fs::File::open(tarball)?;
+	let tar = flate2::read::GzDecoder::new(tar_gz);
+	let mut archive = tar::Archive::new(tar);
+	let temp_unpacked = temp.join("unpacked");
+	archive.unpack(&temp_unpacked)?;
+
+	for entry in fs::read_dir(&temp_unpacked)? {
+		let entry = entry?;
+		let path = entry.path();
+		fs::rename(path, &target)?;
+	}
+
+	let readme = &target.join("README.md");
+	let contents = fs::read_to_string(readme)?
+		.replace(
+			"<a href=\"https://github.com/catppuccin/template\">App</a>",
+			&format!("<a href=\"{url}\">{name}</a>"),
+		)
+		.replace(
+			"catppuccin/template",
+			&format!("catppuccin/{}", &name_kebab),
+		)
+		.replace(
+			"https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/previews/",
+			"assets/",
+		);
+	fs::write(readme, contents)?;
 
 	Ok(())
 }

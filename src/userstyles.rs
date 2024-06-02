@@ -11,7 +11,7 @@ use crate::cli::{UserstyleKey, UserstylesQuery};
 use crate::models::shared::{StringOrStrings, CATEGORIES};
 use crate::models::userstyles::{Readme, Root, Userstyle, UserstylesRoot};
 use crate::{
-	booleanish_match, display_list_or_count, get_userstyle_key, matches_current_maintainer,
+	display_json_or_count, get_userstyle_key, is_booleanish_match, matches_current_maintainer,
 };
 
 pub fn query(
@@ -33,7 +33,7 @@ pub fn query(
 				.into_iter()
 				.filter(|userstyle| {
 					let current_maintainers = &userstyle.1.current_maintainers;
-					let matches = matches_current_maintainer(current_maintainers, by.to_owned());
+					let matches = matches_current_maintainer(current_maintainers, &by);
 
 					if options.not {
 						!matches
@@ -44,7 +44,7 @@ pub fn query(
 				.map(|userstyle| get_userstyle_key(userstyle, options.get))
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, count)?;
+			display_json_or_count(&result, count)?;
 		}
 		Some(UserstylesQuery::Has {
 			name,
@@ -62,7 +62,7 @@ pub fn query(
 						if let Some(name) = &name {
 							*name == userstyle.0
 								|| match &userstyle.1.name {
-									StringOrStrings::Multiple(n) => n.contains(&name),
+									StringOrStrings::Multiple(n) => n.contains(name),
 									StringOrStrings::Single(n) => *n == *name,
 								}
 						} else {
@@ -71,15 +71,15 @@ pub fn query(
 					} && {
 						if let Some(categories) = &categories {
 							categories
-								.into_iter()
-								.all(|c| userstyle.1.categories.contains(&c))
+								.iter()
+								.all(|c| userstyle.1.categories.contains(c))
 						} else {
 							true
 						}
 					} && {
 						if let Some(icon) = &icon {
 							let value = &userstyle.1.icon;
-							booleanish_match(value.clone(), icon.to_string())
+							is_booleanish_match(value.clone(), icon)
 						} else {
 							true
 						}
@@ -95,7 +95,7 @@ pub fn query(
 						if let Some(app_link) = &app_link {
 							app_link.parse().unwrap_or_else(|_| {
 								match &userstyle.1.readme.app_link {
-									StringOrStrings::Multiple(l) => l.contains(&app_link),
+									StringOrStrings::Multiple(l) => l.contains(app_link),
 									StringOrStrings::Single(l) => *l == *app_link,
 								}
 							})
@@ -113,7 +113,7 @@ pub fn query(
 				.map(|userstyle| get_userstyle_key(userstyle, options.get))
 				.collect::<Vec<_>>();
 
-			display_list_or_count(result, options.count)?;
+			display_json_or_count(&result, options.count)?;
 		}
 		None => {
 			if let Some(r#for) = r#for {
@@ -131,8 +131,9 @@ pub fn query(
 					.context("Failed to serialize results")?
 				);
 			} else {
-				display_list_or_count(
-					data.userstyles
+				display_json_or_count(
+					&data
+						.userstyles
 						.into_iter()
 						.map(|port| get_userstyle_key(port, get))
 						.collect::<Vec<_>>(),
@@ -187,7 +188,7 @@ pub fn init(
 				.colors
 				.into_iter()
 				.filter(|c| c.accent)
-				.map(|c| c.identifier())
+				.map(catppuccin::Color::identifier)
 				.collect(),
 		)
 		.prompt()
@@ -211,9 +212,8 @@ pub fn init(
 	let target = cwd.join(path::PathBuf::from("styles/".to_string() + &name_kebab));
 	if target.exists() {
 		bail!("Userstyle already exists",)
-	} else {
-		fs::create_dir(&target)?;
 	}
+	fs::create_dir(&target)?;
 
 	let mut template: String = reqwest::blocking::get(
 		"https://github.com/catppuccin/userstyles/raw/main/template/catppuccin.user.css",
@@ -243,9 +243,9 @@ pub fn init(
 
 	let metadata = Userstyle {
 		name: StringOrStrings::Single(name),
-		categories: categories,
-		icon: icon,
-		color: color,
+		categories,
+		icon,
+		color,
 		readme: Readme {
 			app_link: StringOrStrings::Single(url),
 		},

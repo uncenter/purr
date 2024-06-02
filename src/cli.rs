@@ -187,8 +187,9 @@ pub struct ExtraOptions<K: Send + Sync + Default + ValueEnum + 'static> {
 	pub get: K,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Default)]
 pub enum Key {
+	#[default]
 	Identifier,
 	Name,
 	Categories,
@@ -202,14 +203,9 @@ pub enum Key {
 	PastMaintainers,
 }
 
-impl Default for Key {
-	fn default() -> Self {
-		Key::Identifier
-	}
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Default)]
 pub enum UserstyleKey {
+	#[default]
 	Identifier,
 	Name,
 	Categories,
@@ -220,12 +216,6 @@ pub enum UserstyleKey {
 	PastMaintainers,
 }
 
-impl Default for UserstyleKey {
-	fn default() -> Self {
-		UserstyleKey::Identifier
-	}
-}
-
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, strum::Display)]
 #[strum(serialize_all = "snake_case")]
 pub enum WhiskersCustomProperty {
@@ -234,11 +224,11 @@ pub enum WhiskersCustomProperty {
 	NotApplicable,
 }
 
-fn valid_url(u: &str) -> Result<String, String> {
-	if Url::parse(u).is_ok() {
-		Ok(String::from(u))
+fn valid_url(url: &str) -> Result<String, String> {
+	if Url::parse(url).is_ok() {
+		Ok(String::from(url))
 	} else {
-		Err(format!("{} is not a valid URL", u))
+		Err(format!("{url} is not a valid URL"))
 	}
 }
 
@@ -262,7 +252,7 @@ fn valid_category(c: &str) -> Result<String, String> {
 			if let Some(best) = best {
 				format!(". Did you mean '{}'?", best.green())
 			} else {
-				"".to_string()
+				String::new()
 			}
 		))
 	}

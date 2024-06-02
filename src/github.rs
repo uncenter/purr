@@ -1,10 +1,12 @@
-use color_eyre::Result;
+use color_eyre::{eyre::bail, Result};
+
+use reqwest::{blocking::Client, Error};
+use serde::{Deserialize, Serialize};
+
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use repositories::{
 	RepositoriesOrganizationRepositories, RepositoriesOrganizationRepositoriesNodes,
 };
-use reqwest::{blocking::Client, Error};
-use serde::{Deserialize, Serialize};
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -14,46 +16,45 @@ use serde::{Deserialize, Serialize};
 )]
 struct Repositories;
 
-pub fn repositories(
-	client: Client,
+#[must_use]
+pub fn fetch_repositories(
+	client: &Client,
 	cursor: Option<std::string::String>,
 ) -> RepositoriesOrganizationRepositories {
 	let variables = repositories::Variables { cursor };
 
-	let response_body =
-		post_graphql::<Repositories, _>(&client, "https://api.github.com/graphql", variables)
+	let reponse =
+		post_graphql::<Repositories, _>(client, "https://api.github.com/graphql", variables)
 			.unwrap();
 
-	let response_data: repositories::ResponseData =
-		response_body.data.expect("missing response data");
+	let data: repositories::ResponseData = reponse.data.expect("missing response data");
 
-	return response_data
-		.organization
+	data.organization
 		.expect("missing organization")
-		.repositories;
+		.repositories
 }
 
-pub fn paginate_repositories(
-	token: String,
+pub fn fetch_all_repositories(
+	token: &str,
 ) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>, Error> {
 	let client = Client::builder()
 		.user_agent("graphql-rust/0.10.0")
 		.default_headers(
 			std::iter::once((
 				reqwest::header::AUTHORIZATION,
-				reqwest::header::HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
+				reqwest::header::HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
 			))
 			.collect(),
 		)
 		.build()?;
 
 	let mut cursor = None;
-	let mut repos: Vec<Option<RepositoriesOrganizationRepositoriesNodes>> = vec![];
+	let mut repositories: Vec<Option<RepositoriesOrganizationRepositoriesNodes>> = vec![];
 
 	loop {
-		let data = repositories(client.clone(), cursor);
+		let data = fetch_repositories(&client, cursor);
 
-		repos.extend(data.nodes.expect("repositories nodes is null"));
+		repositories.extend(data.nodes.expect("repositories nodes is null"));
 
 		if !data.page_info.has_next_page {
 			break;
@@ -61,17 +62,17 @@ pub fn paginate_repositories(
 		cursor = data.page_info.end_cursor;
 	}
 
-	return Ok(repos);
+	Ok(repositories)
 }
 
 pub fn rest(path: &str, token: Option<String>) -> Result<reqwest::blocking::Response> {
-	let client = reqwest::blocking::Client::new();
+	let client = Client::new();
 	let request = client
-		.get(format!("https://api.github.com/{}", path))
+		.get(format!("https://api.github.com/{path}"))
 		.header(reqwest::header::USER_AGENT, "catppuccin-purr");
 	Ok(if let Some(token) = token {
 		request
-			.header(reqwest::header::AUTHORIZATION, format!("Bearer {}", token))
+			.header(reqwest::header::AUTHORIZATION, format!("Bearer {token}"))
 			.send()?
 	} else {
 		request.send()?
@@ -88,4 +89,20 @@ pub struct RepositoryResponse {
 pub struct CustomProperty {
 	pub property_name: String,
 	pub value: String,
+}
+
+pub fn fetch_whiskers_custom_property(repository: &str, token: String) -> Result<String> {
+	let props = rest(
+		&format!("repos/catppuccin/{repository}/properties/values"),
+		Some(token),
+	)?
+	.json::<Vec<CustomProperty>>()?;
+
+	for prop in props {
+		if prop.property_name == "whiskers" {
+			return Ok(prop.value);
+		}
+	}
+
+	bail!("whiskers custom property should exist on all repositories")
 }

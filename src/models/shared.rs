@@ -9,7 +9,7 @@ pub enum StringOrStrings {
 
 impl Default for StringOrStrings {
 	fn default() -> Self {
-		StringOrStrings::Single("".to_string())
+		StringOrStrings::Single(String::new())
 	}
 }
 

@@ -15,7 +15,7 @@ pub mod ports;
 pub mod userstyles;
 pub mod whiskerify;
 
-fn matches_current_maintainer(current_maintainers: &Vec<Maintainer>, by: Option<String>) -> bool {
+fn matches_current_maintainer(current_maintainers: &[Maintainer], by: &Option<String>) -> bool {
 	match &by {
 		Some(by) => current_maintainers.iter().any(|maintainer| {
 			maintainer
@@ -32,20 +32,20 @@ fn matches_current_maintainer(current_maintainers: &Vec<Maintainer>, by: Option<
 	}
 }
 
-fn display_list_or_count(result: Vec<Value>, count: bool) -> Result<()> {
+fn display_json_or_count(result: &[Value], count: bool) -> Result<()> {
 	println!(
 		"{}",
-		match count {
-			true => result.len().to_string(),
-			false =>
-				serde_json::to_string_pretty(&result).context("Failed to serialize results")?,
+		if count {
+			result.len().to_string()
+		} else {
+			serde_json::to_string_pretty(&result).context("Failed to serialize results")?
 		}
 	);
 
 	Ok(())
 }
 
-fn booleanish_match(value: Option<String>, expected: String) -> bool {
+fn is_booleanish_match(value: Option<String>, expected: &str) -> bool {
 	(expected == "true" && value.is_some())
 		|| (expected == "false" && value.is_none())
 		|| (if let Some(value) = value {

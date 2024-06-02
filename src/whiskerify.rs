@@ -39,17 +39,17 @@ pub fn convert(path: PathBuf, dry_run: bool) -> Result<()> {
 				{
 					let opacity = values[3];
 
-					let filters = if opacity != 255 {
+					let filters = if opacity == 255 {
+						" | css_rgb".to_string()
+					} else {
 						format!(
 							" | mod(opacity={:.2}) | css_rgba",
-							opacity as f32 / 255 as f32
+							f32::from(opacity) / 255_f32
 						)
-					} else {
-						" | css_rgb".to_string()
 					};
 
 					contents = contents.replace(
-						&text,
+						text,
 						format!("{} {}{} {}", "{{", color.identifier(), filters, "}}").as_str(),
 					);
 					possible_rgbs.retain(|x| *x.0 != *text);
@@ -71,11 +71,11 @@ pub fn convert(path: PathBuf, dry_run: bool) -> Result<()> {
 			path.to_string_lossy(),
 			line_number + 1,
 			line_content.find(text).unwrap() + 1
-		)
+		);
 	}
 
 	if dry_run {
-		println!("{}", contents);
+		println!("{contents}");
 	} else {
 		fs::write(path, contents)?;
 	}
