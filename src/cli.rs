@@ -7,7 +7,7 @@ use url::Url;
 use crate::models::shared::CATEGORIES;
 
 #[derive(Parser)]
-#[command(version, arg_required_else_help(true))]
+#[command(name = "purr", version, arg_required_else_help(true))]
 pub struct Cli {
 	#[command(subcommand)]
 	pub command: Commands,
@@ -15,66 +15,85 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
+	/// Query about the ports.yml data source
 	Query {
 		#[command(subcommand)]
 		command: Option<Query>,
 
+		/// Query data for a specific port
 		#[arg(long, name = "PORT", conflicts_with = "count", requires = "get")]
 		r#for: Option<String>,
 
+		/// Count the number of results
 		#[arg(short, long)]
 		count: bool,
 
+		/// Extract a specific property each result
 		#[arg(short, long, value_enum, default_value_t)]
 		get: Key,
 	},
+	/// Initialize a new port from catppuccin/template
 	Init {
+		/// Name of the application
 		#[arg(long)]
 		name: Option<String>,
 
+		/// URL to the application
 		#[arg(long, value_parser = valid_url)]
 		url: Option<String>,
 	},
+	/// Userstyles-related subcommands
 	Userstyles {
 		#[command(subcommand)]
 		command: Userstyles,
 	},
+	/// Convert a theme file to a Whiskers template
 	Whiskerify {
-		path: PathBuf,
+		input: PathBuf,
 
 		#[arg(short, long)]
-		dry_run: bool,
+		output: Option<PathBuf>,
 	},
 }
 
 #[derive(Subcommand)]
 pub enum Userstyles {
+	/// Query about the userstyles.yml data source
 	Query {
 		#[command(subcommand)]
 		command: Option<UserstylesQuery>,
 
+		/// Query data for a specific userstyle
 		#[arg(long, name = "USERSTYLE", conflicts_with = "count", requires = "get")]
 		r#for: Option<String>,
 
+		/// Count the number of results
 		#[arg(short, long)]
 		count: bool,
 
+		/// Extract a specific property each result
 		#[arg(short, long, value_enum, default_value_t)]
 		get: UserstyleKey,
 	},
+	/// Initialize a new userstyle from the template
 	Init {
+		/// Name of the application
 		#[arg(long)]
 		name: Option<String>,
 
+		/// Categories that represent the application
 		#[arg(long = "category", value_delimiter = ',', value_parser = valid_category)]
 		categories: Option<Vec<String>>,
 
+		/// Icon for the application (from simpleicons.org)
 		#[arg(long)]
 		icon: Option<String>,
 
+		/// Name of a Catppuccin color that matches the application's brand color
 		#[arg(long)]
 		color: Option<String>,
 
+		/// URL to the application
 		#[arg(long, value_parser = valid_url)]
 		url: Option<String>,
 	},
@@ -82,39 +101,50 @@ pub enum Userstyles {
 
 #[derive(Subcommand)]
 pub enum Query {
+	/// Query maintained ports and who maintains them
 	Maintained {
+		/// Name of the maintainer to search for
 		#[arg(long, name = "NAME")]
 		by: Option<String>,
 
 		#[command(flatten)]
 		options: ExtraOptions<Key>,
 	},
+	/// Query about the Whiskers migration
 	Whiskers {
+		/// Name of the repository to query
 		#[arg(long, name = "REPOSITORY", conflicts_with_all = ["count"])]
 		r#for: Option<String>,
 
+		/// Whiskers state to check for
 		#[arg(short, long, name = "STATE")]
 		is: Option<WhiskersCustomProperty>,
 
+		/// Invert matched results
 		#[arg(short, long)]
 		not: bool,
 
+		/// Count the number of results
 		#[arg(short, long)]
 		count: bool,
 
 		#[arg(long, env = "GITHUB_TOKEN")]
 		token: String,
 	},
+	/// Query star counts of the whole organization or per-repository
 	Stars {
+		/// Name of the repository to query
 		#[arg(long, name = "REPOSITORY", conflicts_with = "archived")]
 		r#for: Option<String>,
 
+		/// Whether to include archived repositories in the total count
 		#[arg(long)]
 		archived: bool,
 
 		#[arg(long, env = "GITHUB_TOKEN")]
 		token: String,
 	},
+	/// Query ports with matching fields
 	Has {
 		#[arg(long)]
 		name: Option<String>,
@@ -147,6 +177,7 @@ pub enum Query {
 
 #[derive(Subcommand)]
 pub enum UserstylesQuery {
+	/// Query maintained userstyles and who maintains them
 	Maintained {
 		#[arg(long, name = "NAME")]
 		by: Option<String>,
@@ -154,6 +185,7 @@ pub enum UserstylesQuery {
 		#[command(flatten)]
 		options: ExtraOptions<UserstyleKey>,
 	},
+	/// Query ports with matching fields
 	Has {
 		#[arg(long)]
 		name: Option<String>,
@@ -177,12 +209,15 @@ pub enum UserstylesQuery {
 
 #[derive(Args)]
 pub struct ExtraOptions<K: Send + Sync + Default + ValueEnum + 'static> {
+	/// Invert matched results
 	#[arg(short, long)]
 	pub not: bool,
 
+	/// Count the number of results
 	#[arg(short, long)]
 	pub count: bool,
 
+	/// Extract a specific property each result
 	#[arg(short, long, value_enum, default_value_t)]
 	pub get: K,
 }

@@ -5,8 +5,8 @@ use log::warn;
 
 use fancy_regex::Regex;
 
-pub fn convert(path: PathBuf, dry_run: bool) -> Result<()> {
-	let mut contents = fs::read_to_string(&path)?;
+pub fn convert(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
+	let mut contents = fs::read_to_string(&input)?;
 
 	let mut color_matches = Regex::new("rgba?\\(.*\\)")
 		.unwrap()
@@ -63,15 +63,15 @@ pub fn convert(path: PathBuf, dry_run: bool) -> Result<()> {
 		warn!(
 			"could not replace non-Catppuccin color '{}' at {}:{}",
 			text.yellow(),
-			path.to_string_lossy(),
+			input.to_string_lossy(),
 			&get_location_in_text(&text, &contents)
 		);
 	}
 
-	if dry_run {
-		println!("{contents}");
-	} else {
+	if let Some(path) = output {
 		fs::write(path, contents)?;
+	} else {
+		println!("{contents}");
 	}
 
 	Ok(())

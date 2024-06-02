@@ -11,6 +11,10 @@ keywords = ["cli"]
 categories = ["command-line-utilities"]
 edition = "2021"
 
+[[bin]]
+name = "purr"
+path = "src/main.rs"
+
 [dependencies]
 catppuccin = { version = "2.4.0", features = ["css-colors"] }
 clap = { version = "4.5.4", features = ["derive", "env"] }

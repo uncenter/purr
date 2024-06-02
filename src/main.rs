@@ -36,7 +36,7 @@ fn main() -> Result<()> {
 				url,
 			} => userstyles::init(name, categories, icon, color, url)?,
 		},
-		Commands::Whiskerify { path, dry_run } => whiskerify::convert(path, dry_run)?,
+		Commands::Whiskerify { input, output } => whiskerify::convert(input, output)?,
 	}
 
 	Ok(())
