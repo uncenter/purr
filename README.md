@@ -24,6 +24,21 @@ nix run github:uncenter/purr
 purr <COMMAND> [-h | --help] [-V | --version]
 ```
 
+### Commands
+
+- [`query`](#query)
+  - [`maintained`](#maintained)
+  - [`has`](#has)
+  - [`stars`](#stars)
+  - [`whiskers`](#whiskers)
+- [`whiskerify`](#whiskerify)
+- [`init`](#init)
+- [`userstyles`](#userstyles)
+  - [`query`](#query-1)
+    - [`maintained`](#maintained-1)
+    - [`has`](#has-1)
+  - [`init`](#init-1)
+
 ### `query`
 
 ```
@@ -32,17 +47,35 @@ purr query [--for <PORT>] [-g | --get] [-c | --count]
 
 Query the ports.yml data source. With no arguments, all ports are displayed.
 
-#### `--for <PORT>`
+<details>
+<summary>Examples</summary>
 
-Query about a specific port.
+- List all ports.
 
-#### `-g` / `--get`
+  ```
+  purr query
+  ```
 
-Get a specific data point for all ports (or for a specific port if used with `--for`).
+- Count the number of ports.
 
-#### `--count`
+  ```
+  purr query --count
+  ```
 
-Count the number of ports.
+
+- List the names of all ports.
+
+  ```
+  purr query --get name
+  ```
+
+- List the current maintainers of the `nvim` port.
+
+  ```
+  purr query --for nvim --get current-maintainers
+  ```
+
+</details>
 
 #### `maintained`
 
@@ -196,6 +229,12 @@ purr query whiskers [--is <STATE>] [-n | --not] [-c | --count | -p | --percentag
 <details>
 <summary>Examples</summary>
 
+- Get the overall statistics of the Whiskerification process.
+  
+  ```
+  purr query whiskers
+  ```
+
 - List Whiskerified repositories.
 
   ```
@@ -205,7 +244,7 @@ purr query whiskers [--is <STATE>] [-n | --not] [-c | --count | -p | --percentag
 - List non-Whiskerified repositories.
 
   ```
-  purr query whiskers --is true --not
+  purr query whiskers --is false
   ```
 
 - List repositories Whiskers is not applicable for.
@@ -214,10 +253,10 @@ purr query whiskers [--is <STATE>] [-n | --not] [-c | --count | -p | --percentag
   purr query whiskers --is not-applicable
   ```
 
-- Get the percentage of the organization that has been Whiskersified.
+- List repositories Whiskers *is* applicable for.
 
   ```
-  purr query whiskers --is true --percentage
+  purr query whiskers --is not-applicable --not
   ```
 
 </details>
@@ -253,17 +292,35 @@ purr userstyles query [--for <USERSTYLE>] [-g | --get] [-c | --count]
 
 Query the userstyles.yml data source. With no arguments, all userstyles are displayed.
 
-##### `--for <USERSTYLE>`
+<details>
+<summary>Examples</summary>
 
-Query data about a specific userstyle.
+- List all userstyles.
 
-##### `-g` / `--get`
+  ```
+  purr userstyles query
+  ```
 
-Get a specific data point for all userstyles (or for a specific userstyle if used with `--for`).
+- Count the number of userstyles.
 
-##### `--count`
+  ```
+  purr userstyles query --count
+  ```
 
-Count the number of userstyles.
+
+- List the names of all userstyles.
+
+  ```
+  purr userstyles query --get name
+  ```
+
+- List the current maintainers of the `youtube` userstyle.
+
+  ```
+  purr userstyles query --for youtube --get current-maintainers 
+  ```
+
+</details>
 
 ##### `maintained`
 
