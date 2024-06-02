@@ -1,19 +1,21 @@
 use std::{fs, path::PathBuf};
 
-use color_eyre::eyre::Result;
+use color_eyre::{eyre::Result, owo_colors::OwoColorize};
+use log::warn;
+
 use fancy_regex::Regex;
 
 pub fn convert(path: PathBuf, dry_run: bool) -> Result<()> {
 	let mut contents = fs::read_to_string(&path)?;
 
-	let mut rgb_color_matches: Vec<(&str, [u8; 4])> = vec![];
+	let mut possible_rgbs: Vec<(&str, [u8; 4])> = vec![];
 
 	let temp = contents.clone();
 	for m in Regex::new("rgba?\\(.*\\)").unwrap().captures_iter(&temp) {
 		let text = m.unwrap().get(0).unwrap().as_str();
 		let color = csscolorparser::parse(text).unwrap();
 
-		rgb_color_matches.push((text, color.to_rgba8()));
+		possible_rgbs.push((text, color.to_rgba8()));
 	}
 
 	for flavor in catppuccin::PALETTE.all_flavors() {
@@ -32,7 +34,7 @@ pub fn convert(path: PathBuf, dry_run: bool) -> Result<()> {
 				&format!("#{} {}.{} {}", "{{", color.identifier(), "hex", "}}"),
 			);
 
-			for (text, values) in &rgb_color_matches {
+			for (text, values) in possible_rgbs.clone() {
 				if color.rgb.r == values[0] && color.rgb.g == values[1] && color.rgb.b == values[2]
 				{
 					let opacity = values[3];
@@ -47,12 +49,29 @@ pub fn convert(path: PathBuf, dry_run: bool) -> Result<()> {
 					};
 
 					contents = contents.replace(
-						text,
+						&text,
 						format!("{} {}{} {}", "{{", color.identifier(), filters, "}}").as_str(),
 					);
+					possible_rgbs.retain(|x| *x.0 != *text);
 				}
 			}
 		}
+	}
+
+	for (text, _) in possible_rgbs {
+		let (line_number, line_content) = contents
+			.lines()
+			.enumerate()
+			.find(|(_i, line)| line.contains(text))
+			.unwrap();
+
+		warn!(
+			"could not replace non-Catppuccin color '{}' at {}:{}:{}",
+			text.yellow(),
+			path.to_string_lossy(),
+			line_number + 1,
+			line_content.find(text).unwrap() + 1
+		)
 	}
 
 	if dry_run {

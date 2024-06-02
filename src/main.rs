@@ -7,6 +7,10 @@ use color_eyre::eyre::Result;
 
 fn main() -> Result<()> {
 	color_eyre::install()?;
+	pretty_env_logger::formatted_builder()
+		.filter_level(log::LevelFilter::max())
+		.init();
+
 	let args = Cli::parse();
 
 	match args.command {
