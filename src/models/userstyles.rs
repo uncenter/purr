@@ -16,6 +16,7 @@ pub struct UserstylesRoot {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub struct Userstyle {
 	pub name: StringOrStrings,
 	pub categories: Vec<String>,
