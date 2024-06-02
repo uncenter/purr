@@ -116,7 +116,6 @@ pub fn get_userstyle_key(entry: (String, Userstyle), key: UserstyleKey) -> Value
 		UserstyleKey::CurrentMaintainers => Value::Array(
 			entry
 				.1
-				.readme
 				.current_maintainers
 				.into_iter()
 				.map(|m| json!({ "name": m.name, "url": m.url }))
@@ -125,7 +124,6 @@ pub fn get_userstyle_key(entry: (String, Userstyle), key: UserstyleKey) -> Value
 		UserstyleKey::PastMaintainers => Value::Array(
 			entry
 				.1
-				.readme
 				.past_maintainers
 				.into_iter()
 				.flatten()
