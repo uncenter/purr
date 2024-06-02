@@ -76,13 +76,10 @@ pub enum Query {
 		options: ExtraOptions<Key>,
 	},
 	Whiskers {
-		#[arg(long, env = "GITHUB_TOKEN")]
-		token: String,
-
-		#[arg(long, name = "REPOSITORY", conflicts_with_all = ["count", "percentage"])]
+		#[arg(long, name = "REPOSITORY", conflicts_with_all = ["count"])]
 		r#for: Option<String>,
 
-		#[arg(short, long, name = "STATE", required_unless_present = "REPOSITORY")]
+		#[arg(short, long, name = "STATE")]
 		is: Option<WhiskersCustomProperty>,
 
 		#[arg(short, long)]
@@ -91,8 +88,8 @@ pub enum Query {
 		#[arg(short, long)]
 		count: bool,
 
-		#[arg(short, long, conflicts_with = "count")]
-		percentage: bool,
+		#[arg(long, env = "GITHUB_TOKEN")]
+		token: String,
 	},
 	Stars {
 		#[arg(long, name = "REPOSITORY", conflicts_with = "archived")]

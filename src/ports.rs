@@ -7,7 +7,7 @@ use inquire::Text;
 use serde_json::Value;
 use url::Url;
 
-use crate::cli::{Key, Query};
+use crate::cli::{Key, Query, WhiskersCustomProperty};
 use crate::github::{self, paginate_repositories, CustomProperty, RepositoryResponse};
 use crate::models::ports::Root;
 use crate::models::shared::StringOrStrings;
@@ -161,7 +161,6 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 			not,
 			count,
 			token,
-			percentage,
 		}) => {
 			fn check_whiskers_status(repository: String, token: String) -> Result<String> {
 				let props = github::rest(
@@ -190,26 +189,47 @@ pub fn query(command: Option<Query>, count: bool, get: Key) -> Result<()> {
 					}
 				);
 			} else {
+				let mut found_true = 0;
+				let mut found_false = 0;
+				let mut found_na = 0;
+
 				let repositories = paginate_repositories(token.to_string())?;
 				let result = repositories
 					.iter()
 					.flatten()
+					.filter(|repo| !repo.is_archived)
 					.filter_map(|repository| {
 						let status =
 							check_whiskers_status(repository.name.to_string(), token.clone())
 								.unwrap();
-						if status == is.expect("is required without for").to_string() {
-							Some(Value::String(repository.name.to_string()))
+
+						if status == WhiskersCustomProperty::True.to_string() {
+							found_true += 1;
+						} else if status == WhiskersCustomProperty::False.to_string() {
+							found_false += 1;
+						} else {
+							found_na += 1;
+						}
+
+						if let Some(is) = is {
+							if status == is.to_string() {
+								Some(Value::String(repository.name.to_string()))
+							} else {
+								None
+							}
 						} else {
 							None
 						}
 					})
 					.collect::<Vec<_>>();
 
-				if percentage {
+				if is.is_none() {
 					println!(
-						"{:.2}%",
-						(result.len() as f32 / repositories.len() as f32) * 100.0
+						"true: {}, false: {}, n/a: {} ({:.2}%)",
+						found_true,
+						found_false,
+						found_na,
+						(found_true as f32 / (found_true + found_false) as f32) * 100.0
 					)
 				} else {
 					display_list_or_count(result, count)?;
