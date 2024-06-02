@@ -7,6 +7,8 @@ Query data about the Catppuccin project, the [catppuccin/userstyles](https://git
 ### Cargo
 
 ```sh
+cargo install catppuccin-purr
+# or
 cargo install --git https://github.com/uncenter/purr.git
 ```
 
