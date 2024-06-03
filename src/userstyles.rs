@@ -44,7 +44,7 @@ pub fn query(
 				.map(|userstyle| get_userstyle_key(userstyle, options.get))
 				.collect::<Vec<_>>();
 
-			display_json_or_count(&result, count)?;
+			display_json_or_count(&result, options.count)?;
 		}
 		Some(UserstylesQuery::Has {
 			name,

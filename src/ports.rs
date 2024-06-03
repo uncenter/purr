@@ -40,7 +40,7 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 				.map(|port| get_key(port, options.get))
 				.collect::<Vec<_>>();
 
-			display_json_or_count(&result, count)?;
+			display_json_or_count(&result, options.count)?;
 		}
 		Some(Query::Has {
 			name,
