@@ -6,7 +6,8 @@ use log::warn;
 use fancy_regex::Regex;
 
 pub fn convert(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
-	let mut contents = fs::read_to_string(&input)?;
+	let original: String = fs::read_to_string(&input)?;
+	let mut contents = original.clone();
 
 	let mut color_matches = Regex::new("rgba?\\(.*\\)")
 		.unwrap()
@@ -64,8 +65,12 @@ pub fn convert(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
 			"could not replace non-Catppuccin color '{}' at {}:{}",
 			text.yellow(),
 			input.to_string_lossy(),
-			&get_location_in_text(&text, &contents)
+			&get_location_in_text(&text, &contents),
 		);
+	}
+
+	if original == contents {
+		warn!("no changes made to original file");
 	}
 
 	if let Some(path) = output {
