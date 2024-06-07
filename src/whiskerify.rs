@@ -3,7 +3,7 @@ use std::{fs, path::PathBuf};
 use color_eyre::{eyre::Result, owo_colors::OwoColorize};
 use log::warn;
 
-use fancy_regex::Regex;
+use fancy_regex::{Regex, RegexBuilder};
 
 pub fn convert(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
 	let original: String = fs::read_to_string(&input)?;
@@ -28,13 +28,19 @@ pub fn convert(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
 			);
 
 		for color in &flavor.colors {
-			contents = contents.replace(
-				&color.hex.to_string(),
-				&format!(
-					"#{}",
-					as_tera_expr(&(color.identifier().to_string() + ".hex"))
-				),
-			);
+			let search = RegexBuilder::new(&("(?i)".to_string() + &color.hex.to_string()))
+				.build()
+				.expect("Invalid Regex");
+
+			for result in search.find_iter(&contents.clone()).flatten() {
+				contents = contents.replace(
+					result.as_str(),
+					&format!(
+						"#{}",
+						as_tera_expr(&(color.identifier().to_string() + ".hex"))
+					),
+				);
+			}
 
 			for (text, values) in color_matches.clone() {
 				if color.rgb.r == values[0] && color.rgb.g == values[1] && color.rgb.b == values[2]
