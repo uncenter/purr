@@ -28,17 +28,13 @@ pub fn convert(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
 			);
 
 		for color in &flavor.colors {
-			let search = RegexBuilder::new(&("(?i)".to_string() + &color.hex.to_string()))
-				.build()
-				.expect("Invalid Regex");
+			let pat = "(?i)".to_string() + &color.hex.to_string()[1..];
+			let search = Regex::new(&pat).unwrap();
 
 			for result in search.find_iter(&contents.clone()).flatten() {
 				contents = contents.replace(
 					result.as_str(),
-					&format!(
-						"#{}",
-						as_tera_expr(&(color.identifier().to_string() + ".hex"))
-					),
+					&as_tera_expr(&(color.identifier().to_string() + ".hex")),
 				);
 			}
 
