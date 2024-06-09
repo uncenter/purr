@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/uncenter/purr/compare/v0.3.0...v0.3.1) (2024-06-09)
+
+
+### Bug Fixes
+
+* **whiskerify:** don't only search for hex codes with # ([6104f93](https://github.com/uncenter/purr/commit/6104f933fba836ad026506362b8b44cd71c5a797))
+
 ## [0.3.0](https://github.com/uncenter/purr/compare/v0.2.1...v0.3.0) (2024-06-07)
 
 
