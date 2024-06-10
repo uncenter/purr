@@ -163,3 +163,33 @@ fn round_to_two_decimal_places(value: f64) -> f64 {
 fn hsl_to_vec(hsl: &Hsl) -> Vec<f64> {
 	vec![hsl.h, hsl.s, hsl.l]
 }
+
+#[cfg(test)]
+mod tests {
+	use crate::whiskerify::{self, as_tera_expr};
+
+	#[test]
+	fn all_colors_rgb() {
+		for flavor in catppuccin::PALETTE.all_flavors() {
+			for color in &flavor.colors {
+				assert_eq!(
+					whiskerify::convert(color.hex.to_string(), None),
+					format!(
+						"#{}",
+						as_tera_expr(&(color.identifier().to_owned() + ".hex"))
+					)
+				);
+				let rgb = css_colors::RGB::from(*color);
+				let hsl = css_colors::HSL::from(*color);
+				assert_eq!(
+					whiskerify::convert(rgb.to_string(), None),
+					as_tera_expr(&(color.identifier().to_owned() + " | css_rgb"))
+				);
+				assert_eq!(
+					whiskerify::convert(hsl.to_string(), None),
+					as_tera_expr(&(color.identifier().to_owned() + " | css_hsl"))
+				);
+			}
+		}
+	}
+}
