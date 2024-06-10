@@ -178,6 +178,7 @@ dependencies = [
  "clap",
  "color-eyre",
  "convert_case",
+ "css-colors",
  "csscolorparser",
  "fancy-regex",
  "flate2",

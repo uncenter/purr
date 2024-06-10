@@ -1,21 +1,43 @@
 use std::{fs, path::PathBuf};
 
+use catppuccin::Hsl;
 use color_eyre::{eyre::Result, owo_colors::OwoColorize};
 use log::warn;
 
-use fancy_regex::{Regex, RegexBuilder};
+use fancy_regex::Regex;
 
-pub fn convert(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
+pub fn handle(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
 	let original: String = fs::read_to_string(&input)?;
-	let mut contents = original.clone();
+	let new = convert(original.clone(), Some(input));
 
-	let mut color_matches = Regex::new("rgba?\\(.*\\)")
+	if original == new {
+		warn!("no changes made to original file");
+	}
+
+	if let Some(path) = output {
+		fs::write(path, new)?;
+	} else {
+		println!("{new}");
+	}
+
+	Ok(())
+}
+
+pub fn convert(mut contents: String, input_path: Option<PathBuf>) -> String {
+	let mut color_matches: Vec<(String, csscolorparser::Color)> = Regex::new("(rgb|hsl)a?\\(.*\\)")
 		.unwrap()
 		.captures_iter(&contents.clone())
-		.map(|m| {
+		.filter_map(|m| {
 			let text = m.unwrap().get(0).unwrap().as_str();
-			let color = csscolorparser::parse(text).unwrap();
-			(text.to_string(), color.to_rgba8())
+			let color = match csscolorparser::parse(text) {
+				Ok(c) => c,
+				Err(_) => {
+					warn!("invalid color '{}'", text);
+					return None;
+				}
+			};
+
+			Some((text.to_string(), color))
 		})
 		.collect::<Vec<_>>();
 
@@ -38,17 +60,53 @@ pub fn convert(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
 				);
 			}
 
-			for (text, values) in color_matches.clone() {
-				if color.rgb.r == values[0] && color.rgb.g == values[1] && color.rgb.b == values[2]
-				{
-					let opacity = values[3];
+			for (text, color_match) in color_matches.clone() {
+				let res = if text.contains("hsl") {
+					let expected = hsl_to_vec(&color.hsl)
+						.into_iter()
+						.map(round_to_two_decimal_places)
+						.collect::<Vec<_>>();
+
+					let mut values =
+						<(f64, f64, f64, f64) as Into<[f64; 4]>>::into(color_match.to_hsla())
+							.into_iter()
+							.map(round_to_two_decimal_places)
+							.collect::<Vec<_>>();
+
+					let opacity = (values.pop().unwrap() * 255.0).round() as u8;
+
+					let colors_match =
+						expected
+							.iter()
+							.zip(values.iter())
+							.all(|(&hsl_val, &hsla_val)| {
+								let tolerance = if hsl_val < 1.0 && hsla_val < 1.0 {
+									0.02
+								} else {
+									1.0
+								};
+								(hsl_val - hsla_val).abs() < tolerance
+							});
+
+					(colors_match, opacity, "hsl")
+				} else {
+					let values = color_match.to_rgba8();
+					let colors_match = color.rgb.r == values[0]
+						&& color.rgb.g == values[1]
+						&& color.rgb.b == values[2];
+					(colors_match, values[3], "rgb")
+				};
+
+				if res.0 {
+					let opacity = res.1;
 
 					let filters = if opacity == 255 {
-						" | css_rgb".to_string()
+						format!(" | css_{}", res.2)
 					} else {
 						format!(
-							" | mod(opacity={:.2}) | css_rgba",
-							f32::from(opacity) / 255_f32
+							" | mod(opacity={:.2}) | css_{}a",
+							f32::from(opacity) / 255_f32,
+							res.2
 						)
 					};
 
@@ -64,24 +122,20 @@ pub fn convert(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
 
 	for (text, _) in color_matches {
 		warn!(
-			"could not replace non-Catppuccin color '{}' at {}:{}",
+			"could not replace non-Catppuccin color '{}'{}",
 			text.yellow(),
-			input.to_string_lossy(),
-			&get_location_in_text(&text, &contents),
+			match input_path {
+				Some(ref p) => format!(
+					" at {}:{}",
+					p.to_string_lossy(),
+					&get_location_in_text(&text, &contents),
+				),
+				None => String::new(),
+			}
 		);
 	}
 
-	if original == contents {
-		warn!("no changes made to original file");
-	}
-
-	if let Some(path) = output {
-		fs::write(path, contents)?;
-	} else {
-		println!("{contents}");
-	}
-
-	Ok(())
+	contents
 }
 
 fn as_tera_expr(value: &str) -> String {
@@ -100,4 +154,12 @@ fn get_location_in_text(search: &str, text: &str) -> String {
 		line_number + 1,
 		line_content.find(search).unwrap() + 1
 	)
+}
+
+fn round_to_two_decimal_places(value: f64) -> f64 {
+	(value * 100.0).round() / 100.0
+}
+
+fn hsl_to_vec(hsl: &Hsl) -> Vec<f64> {
+	vec![hsl.h, hsl.s, hsl.l]
 }
