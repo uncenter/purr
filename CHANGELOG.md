@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/uncenter/purr/compare/v0.3.1...v0.4.0) (2024-06-10)
+
+
+### Features
+
+* **whiskerify:** handle hsl colors ([2fa76ea](https://github.com/uncenter/purr/commit/2fa76ea44c64dbb8c48e1e96f6b437dbd8e0fe90))
+
+
+### Bug Fixes
+
+* better handle invalid --for arguments ([81ad6d7](https://github.com/uncenter/purr/commit/81ad6d75de8e468cd1e053cf7e36a98e1c66859a))
+
 ## [0.3.1](https://github.com/uncenter/purr/compare/v0.3.0...v0.3.1) (2024-06-09)
 
 
