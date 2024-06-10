@@ -122,8 +122,8 @@ pub fn query(
 					serde_json::to_string_pretty(
 						data.userstyles
 							.into_iter()
-							.filter(|port| port.0 == r#for)
-							.map(|port| get_userstyle_key(port, get))
+							.filter(|userstyle| userstyle.0.to_lowercase() == r#for.to_lowercase())
+							.map(|userstyle| get_userstyle_key(userstyle, get))
 							.collect::<Vec<_>>()
 							.first()
 							.ok_or_else(|| eyre!("no userstyle with the name '{}'", r#for))?
@@ -135,7 +135,7 @@ pub fn query(
 					&data
 						.userstyles
 						.into_iter()
-						.map(|port| get_userstyle_key(port, get))
+						.map(|userstyle| get_userstyle_key(userstyle, get))
 						.collect::<Vec<_>>(),
 					count,
 				)?;

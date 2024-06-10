@@ -227,7 +227,7 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 					serde_json::to_string_pretty(
 						data.ports
 							.into_iter()
-							.filter(|port| port.0 == r#for)
+							.filter(|port| port.0.to_lowercase() == r#for.to_lowercase())
 							.map(|port| get_key(port, get))
 							.collect::<Vec<_>>()
 							.first()
