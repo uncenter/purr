@@ -79,13 +79,13 @@ pub fn convert(mut contents: String, input_path: Option<PathBuf>) -> String {
 						expected
 							.iter()
 							.zip(values.iter())
-							.all(|(&hsl_val, &hsla_val)| {
-								let tolerance = if hsl_val < 1.0 && hsla_val < 1.0 {
+							.all(|(&expected_val, &val)| {
+								let tolerance = if expected_val < 1.0 && val < 1.0 {
 									0.02
 								} else {
 									1.0
 								};
-								(hsl_val - hsla_val).abs() < tolerance
+								(expected_val - val).abs() < tolerance
 							});
 
 					(colors_match, opacity, "hsl")
