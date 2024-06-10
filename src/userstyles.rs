@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::{env, fs, path};
 
-use color_eyre::eyre::{bail, Context, Result};
+use color_eyre::eyre::{bail, eyre, Context, Result};
 use convert_case::Casing;
 use inquire::validator::Validation;
 use inquire::{MultiSelect, Select, Text};
@@ -126,7 +126,7 @@ pub fn query(
 							.map(|port| get_userstyle_key(port, get))
 							.collect::<Vec<_>>()
 							.first()
-							.unwrap()
+							.ok_or_else(|| eyre!("no userstyle with the name '{}'", r#for))?
 					)
 					.context("Failed to serialize results")?
 				);

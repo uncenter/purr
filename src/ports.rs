@@ -1,6 +1,6 @@
 use std::{env, fs, io, path};
 
-use color_eyre::eyre::{bail, Context, Result};
+use color_eyre::eyre::{bail, eyre, Context, Result};
 use convert_case::Casing;
 use inquire::validator::Validation;
 use inquire::Text;
@@ -231,7 +231,7 @@ pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Ke
 							.map(|port| get_key(port, get))
 							.collect::<Vec<_>>()
 							.first()
-							.unwrap()
+							.ok_or_else(|| eyre!("no port with the name '{}'", r#for))?
 					)
 					.context("Failed to serialize results")?
 				);
