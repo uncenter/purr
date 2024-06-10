@@ -18,13 +18,9 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
 
-  check:
-    if: ${{ needs.release-please.outputs.release_created }}
-    uses: ./.github/workflows/check.yml
-
   publish:
+    needs: release-please
     if: ${{ needs.release-please.outputs.release_created }}
-    needs: [check]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
