@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/uncenter/purr/compare/v0.4.0...v0.4.1) (2024-06-18)
+
+
+### Bug Fixes
+
+* **query:** compare lowercase ids for --for ([4cc10f6](https://github.com/uncenter/purr/commit/4cc10f6c8b851a50d77e08a302240287becc2d86))
+
 ## [0.4.0](https://github.com/uncenter/purr/compare/v0.3.1...v0.4.0) (2024-06-10)
 
 
