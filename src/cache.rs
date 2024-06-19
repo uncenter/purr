@@ -8,6 +8,8 @@ use std::{
 	time::SystemTime,
 };
 
+static ONE_DAY_IN_SECONDS: u64 = 24 * 60 * 60;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Entry {
 	timestamp: SystemTime,
@@ -40,12 +42,9 @@ impl Cache {
 					.duration_since(entry.timestamp)
 					.unwrap()
 					.as_secs();
-				println!("diff: {diff}");
-				if diff < (24 * 60 * 60) {
-					println!("using cached");
+				if diff < ONE_DAY_IN_SECONDS {
 					Some(&entry.data)
 				} else {
-					println!("invalidating cache");
 					None
 				}
 			}
