@@ -1,6 +1,6 @@
 # purr
 
-An unofficial CLI for Catppuccin developers; query data about Catppuccin ports and [userstyles](https://github.com/catppuccin/userstyles), star counts, the Whiskers migration, or even initialize a new port or userstyle from the upstream template.
+An unofficial CLI for Catppuccin developers; query data about Catppuccin ports and [userstyles](https://github.com/catppuccin/userstyles), star counts of the organization as a whole or individual repositories, the [Whiskers](https://github.com/catppuccin/whiskers) port creation tool migration, or even initialize a new port/userstyle from the upstream template.
 
 ## Installation
 
