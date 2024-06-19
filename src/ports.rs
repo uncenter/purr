@@ -25,13 +25,9 @@ pub fn query(
 	count: bool,
 	get: Key,
 ) -> Result<()> {
-	let ports = match cache.get("ports-yml") {
-		Some(ports) => ports.clone(),
-		None => cache.save(
-			"ports-yml",
-			fetch_text("https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml")?,
-		)?,
-	};
+	let ports = cache.get_or("ports-yml", || {
+		fetch_text("https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml")
+	})?;
 	let data: Root = serde_yaml::from_str(&ports).unwrap();
 
 	match command {

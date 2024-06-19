@@ -23,13 +23,9 @@ pub fn query(
 	count: bool,
 	get: UserstyleKey,
 ) -> Result<()> {
-	let userstyles = match cache.get("userstyles-yml") {
-		Some(userstyles) => userstyles.clone(),
-		None => cache.save(
-			"userstyles-yml",
-			fetch_text("https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml")?,
-		)?,
-	};
+	let userstyles = cache.get_or("userstyles-yml", || {
+		fetch_text("https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml")
+	})?;
 	let data: Root = serde_yaml::from_str(&userstyles).unwrap();
 
 	match command {
@@ -222,27 +218,24 @@ pub fn init(
 	}
 	fs::create_dir(&target)?;
 
-	let mut template = match cache.get("userstyles-template") {
-		Some(userstyles) => userstyles.clone(),
-		None => cache.save(
-			"userstyles-template",
+	let mut template = cache
+		.get_or("userstyles-template", || {
 			fetch_text(
 				"https://github.com/catppuccin/userstyles/raw/main/template/catppuccin.user.css",
-			)?,
-		)?,
-	}
-	.replace("<port-name> Catppuccin", &format!("{} Catppuccin", &name))
-	.replace(
-		"Soothing pastel theme for <port-name>",
-		&format!("Soothing pastel theme for {}", &name),
-	)
-	.replace("<port-name>", &name_kebab)
-	.replace(
-		"<website-domain>",
-		Url::parse(&url)?
-			.host_str()
-			.expect("App link should be a valid URL"),
-	);
+			)
+		})?
+		.replace("<port-name> Catppuccin", &format!("{} Catppuccin", &name))
+		.replace(
+			"Soothing pastel theme for <port-name>",
+			&format!("Soothing pastel theme for {}", &name),
+		)
+		.replace("<port-name>", &name_kebab)
+		.replace(
+			"<website-domain>",
+			Url::parse(&url)?
+				.host_str()
+				.expect("App link should be a valid URL"),
+		);
 
 	let comment_re =
 		fancy_regex::Regex::new(r"\/\*(?:(?!\*\/|==UserStyle==|prettier-ignore)[\s\S])*?\*\/")?;

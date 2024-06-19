@@ -60,6 +60,18 @@ impl Cache {
 		}
 	}
 
+	pub fn get_or<F>(&mut self, key: &str, fetch: F) -> Result<String>
+	where
+		F: FnOnce() -> Result<String>,
+	{
+		if let Some(data) = self.get(key) {
+			return Ok(data.clone());
+		}
+		let value = fetch()?;
+		self.save(key, value.clone())?;
+		Ok(value)
+	}
+
 	pub fn save(&mut self, key: &str, value: String) -> Result<String> {
 		self.entries.insert(
 			key.to_string(),
