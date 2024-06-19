@@ -13,14 +13,15 @@ fn main() -> Result<()> {
 		.filter_level(log::LevelFilter::Warn)
 		.init();
 
+	let args: Cli = Cli::parse();
+
 	let cache = Cache::new(
 		choose_base_strategy()
 			.unwrap()
 			.cache_dir()
 			.join("purr/store.json"),
+		args.refresh,
 	);
-
-	let args = Cli::parse();
 
 	match args.command {
 		Commands::Query {

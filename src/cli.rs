@@ -11,6 +11,10 @@ use crate::models::shared::CATEGORIES;
 pub struct Cli {
 	#[command(subcommand)]
 	pub command: Commands,
+
+	/// Hard refresh cached data
+	#[arg(short, long, global = true)]
+	pub refresh: bool,
 }
 
 #[derive(Subcommand)]

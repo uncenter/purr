@@ -20,10 +20,11 @@ pub struct Entry {
 pub struct Cache {
 	path: PathBuf,
 	entries: HashMap<String, Entry>,
+	refresh: bool,
 }
 
 impl Cache {
-	pub fn new(path: PathBuf) -> Self {
+	pub fn new(path: PathBuf, refresh: bool) -> Self {
 		let entries = match fs::read_to_string(&path) {
 			Ok(contents) => serde_json::from_str(&contents).unwrap_or_default(),
 			Err(_) => {
@@ -32,10 +33,17 @@ impl Cache {
 			}
 		};
 
-		Cache { path, entries }
+		Cache {
+			path,
+			entries,
+			refresh,
+		}
 	}
 
 	pub fn get(&self, key: &str) -> Option<&String> {
+		if self.refresh {
+			return None;
+		}
 		match self.entries.get(key) {
 			Some(entry) => {
 				let diff = SystemTime::now()
