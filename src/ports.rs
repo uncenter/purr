@@ -7,20 +7,28 @@ use inquire::Text;
 use serde_json::Value;
 use url::Url;
 
+use crate::cache::Cache;
 use crate::cli::{Key, Query, WhiskersCustomProperty};
 use crate::github::{
 	self, fetch_all_repositories, fetch_whiskers_custom_property, RepositoryResponse,
 };
 use crate::models::ports::Root;
 use crate::models::shared::StringOrStrings;
-use crate::{display_json_or_count, get_key, is_booleanish_match, matches_current_maintainer};
+use crate::{
+	display_json_or_count, fetch_text, get_key, is_booleanish_match, matches_current_maintainer,
+};
 
-pub fn query(command: Option<Query>, r#for: Option<String>, count: bool, get: Key) -> Result<()> {
-	let raw: String = reqwest::blocking::get(
-		"https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml",
-	)?
-	.text()?;
-	let data: Root = serde_yaml::from_str(&raw).unwrap();
+pub fn query(
+	mut cache: Cache,
+	command: Option<Query>,
+	r#for: Option<String>,
+	count: bool,
+	get: Key,
+) -> Result<()> {
+	let ports = cache.get_or("ports-yml", || {
+		fetch_text("https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml")
+	})?;
+	let data: Root = serde_yaml::from_str(&ports).unwrap();
 
 	match command {
 		Some(Query::Maintained { by, options }) => {

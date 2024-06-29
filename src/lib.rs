@@ -8,6 +8,7 @@ use models::{
 	userstyles::Userstyle,
 };
 
+pub mod cache;
 pub mod cli;
 pub mod github;
 pub mod models;
@@ -131,4 +132,10 @@ pub fn get_userstyle_key(entry: (String, Userstyle), key: UserstyleKey) -> Value
 				.collect(),
 		),
 	}
+}
+
+fn fetch_text(url: &str) -> Result<String> {
+	let response = reqwest::blocking::get(url)?;
+	let text = response.text()?;
+	Ok(text)
 }

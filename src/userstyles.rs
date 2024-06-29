@@ -7,24 +7,26 @@ use inquire::validator::Validation;
 use inquire::{MultiSelect, Select, Text};
 use url::Url;
 
+use crate::cache::Cache;
 use crate::cli::{UserstyleKey, UserstylesQuery};
 use crate::models::shared::{StringOrStrings, CATEGORIES};
 use crate::models::userstyles::{Readme, Root, Userstyle, UserstylesRoot};
 use crate::{
-	display_json_or_count, get_userstyle_key, is_booleanish_match, matches_current_maintainer,
+	display_json_or_count, fetch_text, get_userstyle_key, is_booleanish_match,
+	matches_current_maintainer,
 };
 
 pub fn query(
+	mut cache: Cache,
 	command: Option<UserstylesQuery>,
 	r#for: Option<String>,
 	count: bool,
 	get: UserstyleKey,
 ) -> Result<()> {
-	let raw: String = reqwest::blocking::get(
-		"https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml",
-	)?
-	.text()?;
-	let data: Root = serde_yaml::from_str(&raw).unwrap();
+	let userstyles = cache.get_or("userstyles-yml", || {
+		fetch_text("https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml")
+	})?;
+	let data: Root = serde_yaml::from_str(&userstyles).unwrap();
 
 	match command {
 		Some(UserstylesQuery::Maintained { by, options }) => {
@@ -147,6 +149,7 @@ pub fn query(
 }
 
 pub fn init(
+	mut cache: Cache,
 	name: Option<String>,
 	categories: Option<Vec<String>>,
 	icon: Option<String>,
@@ -215,22 +218,24 @@ pub fn init(
 	}
 	fs::create_dir(&target)?;
 
-	let mut template: String = reqwest::blocking::get(
-		"https://github.com/catppuccin/userstyles/raw/main/template/catppuccin.user.css",
-	)?
-	.text()?
-	.replace("<port-name> Catppuccin", &format!("{} Catppuccin", &name))
-	.replace(
-		"Soothing pastel theme for <port-name>",
-		&format!("Soothing pastel theme for {}", &name),
-	)
-	.replace("<port-name>", &name_kebab)
-	.replace(
-		"<website-domain>",
-		Url::parse(&url)?
-			.host_str()
-			.expect("App link should be a valid URL"),
-	);
+	let mut template = cache
+		.get_or("userstyles-template", || {
+			fetch_text(
+				"https://github.com/catppuccin/userstyles/raw/main/template/catppuccin.user.css",
+			)
+		})?
+		.replace("<port-name> Catppuccin", &format!("{} Catppuccin", &name))
+		.replace(
+			"Soothing pastel theme for <port-name>",
+			&format!("Soothing pastel theme for {}", &name),
+		)
+		.replace("<port-name>", &name_kebab)
+		.replace(
+			"<website-domain>",
+			Url::parse(&url)?
+				.host_str()
+				.expect("App link should be a valid URL"),
+		);
 
 	let comment_re =
 		fancy_regex::Regex::new(r"\/\*(?:(?!\*\/|==UserStyle==|prettier-ignore)[\s\S])*?\*\/")?;
