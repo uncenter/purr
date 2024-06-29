@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/uncenter/purr/compare/v0.4.1...v0.5.0) (2024-06-29)
+
+
+### Features
+
+* basic caching support ([#25](https://github.com/uncenter/purr/issues/25)) ([f109a65](https://github.com/uncenter/purr/commit/f109a65c3faf3a713bb1e723d0e650ff029f947c))
+
 ## [0.4.1](https://github.com/uncenter/purr/compare/v0.4.0...v0.4.1) (2024-06-18)
 
 
