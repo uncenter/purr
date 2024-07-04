@@ -1,7 +1,7 @@
 use catppuccin_purr::{
 	cache::Cache,
-	cli::{Cli, Commands, Userstyles},
-	ports, userstyles, whiskerify,
+	cli::{Cli, Commands, Template},
+	init, query, whiskerify,
 };
 use clap::Parser;
 use color_eyre::eyre::Result;
@@ -29,22 +29,27 @@ fn main() -> Result<()> {
 			r#for,
 			count,
 			get,
-		} => ports::query(cache, command, r#for, count, get)?,
-		Commands::Init { name, url } => ports::init(name, url)?,
-		Commands::Userstyles { command } => match command {
-			Userstyles::Query {
-				command,
-				r#for,
-				count,
-				get,
-			} => userstyles::query(cache, command, r#for, count, get)?,
-			Userstyles::Init {
+			_no_userstyles,
+			userstyles,
+			only_userstyles,
+		} => query::query(
+			cache,
+			command,
+			r#for,
+			count,
+			get,
+			userstyles,
+			only_userstyles,
+		)?,
+		Commands::Init { command } => match command {
+			Template::Port { name, url } => init::port(name, url)?,
+			Template::Userstyle {
 				name,
 				categories,
 				icon,
 				color,
 				url,
-			} => userstyles::init(cache, name, categories, icon, color, url)?,
+			} => init::userstyle(cache, name, categories, icon, color, url)?,
 		},
 		Commands::Whiskerify { input, output } => whiskerify::handle(input, output)?,
 	}
