@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/uncenter/purr/compare/v0.5.0...v1.0.0) (2024-07-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* merge `userstyles` subcommands into root `query` and `init` ([#34](https://github.com/uncenter/purr/issues/34))
+
+### Features
+
+* merge `userstyles` subcommands into root `query` and `init` ([#34](https://github.com/uncenter/purr/issues/34)) ([f39f861](https://github.com/uncenter/purr/commit/f39f8613445bdddc44c44abdfa71ab0b1533ef67))
+
 ## [0.5.0](https://github.com/uncenter/purr/compare/v0.4.1...v0.5.0) (2024-06-29)
 
 
