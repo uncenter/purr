@@ -38,6 +38,10 @@ strum = { version = "0.26.3", features = ["derive"] }
 tar = "0.4.41"
 url = "2.5.2"
 
+[profile.release]
+strip = true
+lto = true
+
 [lints.clippy]
 all = "warn"
 pedantic = "warn"
