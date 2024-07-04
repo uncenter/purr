@@ -1,19 +1,18 @@
 use color_eyre::eyre::{Context, Ok, Result};
 use serde_json::{json, Value};
 
-use cli::{Key, UserstyleKey};
+use cli::Key;
 use models::{
 	ports::Port,
 	shared::{Maintainer, StringOrStrings},
-	userstyles::Userstyle,
 };
 
 pub mod cache;
 pub mod cli;
 pub mod github;
+pub mod init;
 pub mod models;
-pub mod ports;
-pub mod userstyles;
+pub mod query;
 pub mod whiskerify;
 
 fn matches_current_maintainer(current_maintainers: &[Maintainer], by: &Option<String>) -> bool {
@@ -83,46 +82,6 @@ pub fn get_key(entry: (String, Port), key: Key) -> Value {
 				.collect(),
 		),
 		Key::PastMaintainers => Value::Array(
-			entry
-				.1
-				.past_maintainers
-				.into_iter()
-				.flatten()
-				.map(|m| json!({ "name": m.name, "url": m.url }))
-				.collect(),
-		),
-	}
-}
-
-pub fn get_userstyle_key(entry: (String, Userstyle), key: UserstyleKey) -> Value {
-	match key {
-		UserstyleKey::Identifier => Value::String(entry.0),
-		UserstyleKey::Name => match entry.1.name {
-			StringOrStrings::Single(name) => Value::String(name),
-			StringOrStrings::Multiple(names) => {
-				Value::Array(names.into_iter().map(Value::String).collect())
-			}
-		},
-		UserstyleKey::Categories => {
-			Value::Array(entry.1.categories.into_iter().map(Value::String).collect())
-		}
-		UserstyleKey::Icon => Value::String(entry.1.icon.expect("icon should exist")),
-		UserstyleKey::Color => Value::String(entry.1.color),
-		UserstyleKey::AppLink => match entry.1.readme.app_link {
-			StringOrStrings::Single(link) => Value::String(link),
-			StringOrStrings::Multiple(links) => {
-				Value::Array(links.into_iter().map(Value::String).collect())
-			}
-		},
-		UserstyleKey::CurrentMaintainers => Value::Array(
-			entry
-				.1
-				.current_maintainers
-				.into_iter()
-				.map(|m| json!({ "name": m.name, "url": m.url }))
-				.collect(),
-		),
-		UserstyleKey::PastMaintainers => Value::Array(
 			entry
 				.1
 				.past_maintainers

@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{arg, Args, Parser, Subcommand, ValueEnum};
+use clap::{arg, ArgAction, Args, Parser, Subcommand, ValueEnum};
 use color_eyre::owo_colors::OwoColorize;
 use url::Url;
 
@@ -19,7 +19,7 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-	/// Query about the ports.yml data source
+	/// Query ports and userstyles
 	Query {
 		#[command(subcommand)]
 		command: Option<Query>,
@@ -35,21 +35,23 @@ pub enum Commands {
 		/// Extract a specific property each result
 		#[arg(short, long, value_enum, default_value_t)]
 		get: Key,
-	},
-	/// Initialize a new port from catppuccin/template
-	Init {
-		/// Name of the application
-		#[arg(long)]
-		name: Option<String>,
 
-		/// URL to the application
-		#[arg(long, value_parser = valid_url)]
-		url: Option<String>,
+		// See https://jwodder.github.io/kbits/posts/clap-bool-negate/.
+		// Cursed code to enable the correct relationship between `--userstyles` and `--no-userstyles`.
+		/// Include userstyles in query results
+		#[clap(long = "userstyles", overrides_with = "userstyles", global = true)]
+		_no_userstyles: bool,
+		/// Exclude userstyles in query results
+		#[clap(long = "no-userstyles", action = ArgAction::SetFalse, global = true)]
+		userstyles: bool,
+		/// Exclude non-userstyles from query results
+		#[arg(long, conflicts_with_all = ["userstyles", "_no_userstyles"], global = true)]
+		only_userstyles: bool,
 	},
-	/// Userstyles-related subcommands
-	Userstyles {
+	/// Initialize a new port or userstyle
+	Init {
 		#[command(subcommand)]
-		command: Userstyles,
+		command: Template,
 	},
 	/// Convert a theme file to a Whiskers template
 	Whiskerify {
@@ -61,26 +63,19 @@ pub enum Commands {
 }
 
 #[derive(Subcommand)]
-pub enum Userstyles {
-	/// Query about the userstyles.yml data source
-	Query {
-		#[command(subcommand)]
-		command: Option<UserstylesQuery>,
+pub enum Template {
+	/// Initialize a new port from catppuccin/template
+	Port {
+		/// Name of the application
+		#[arg(long)]
+		name: Option<String>,
 
-		/// Query data for a specific userstyle
-		#[arg(long, name = "USERSTYLE", conflicts_with = "count", requires = "get")]
-		r#for: Option<String>,
-
-		/// Count the number of results
-		#[arg(short, long)]
-		count: bool,
-
-		/// Extract a specific property each result
-		#[arg(short, long, value_enum, default_value_t)]
-		get: UserstyleKey,
+		/// URL to the application
+		#[arg(long, value_parser = valid_url)]
+		url: Option<String>,
 	},
 	/// Initialize a new userstyle from the template
-	Init {
+	Userstyle {
 		/// Name of the application
 		#[arg(long)]
 		name: Option<String>,

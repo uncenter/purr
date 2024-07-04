@@ -32,20 +32,15 @@ purr <COMMAND> [-h | --help] [-V | --version]
   - [`stars`](#stars)
   - [`whiskers`](#whiskers)
 - [`init`](#init)
-- [`userstyles`](#userstyles)
-  - [`query`](#query-1)
-    - [`maintained`](#maintained-1)
-    - [`has`](#has-1)
-  - [`init`](#init-1)
 - [`whiskerify`](#whiskerify)
 
 ### `query`
 
 ```
-purr query [--for <PORT>] [-g | --get] [-c | --count]
+purr query [--for <PORT>] [-g | --get] [-c | --count] [--userstyles | --no-userstyles | --only-userstyles]
 ```
 
-Query the ports.yml data source. With no arguments, all ports are displayed.
+Query the ports.yml data source. With no arguments, all ports are displayed. The `--count` and userstyles-related flags work for all of the query subcommands.
 
 <details>
 <summary>Examples</summary>
@@ -56,12 +51,23 @@ Query the ports.yml data source. With no arguments, all ports are displayed.
   purr query
   ```
 
+- List all ports excluding userstyles.
+
+  ```
+  purr query --no-userstyles
+  ```
+
+- List all userstyles.
+
+  ```
+  purr query --only-userstyles
+  ```
+
 - Count the number of ports.
 
   ```
   purr query --count
   ```
-
 
 - List the names of all ports.
 
@@ -146,8 +152,11 @@ purr query has [PROPERTIES] [-n | --not] [-c | --count]
 
 - `--name <NAME>`
 - `--category <CATEGORIES>`
+- `--upstreamed`
+- `--platform <PLATFORM>`
 - `--icon <ICON>`
 - `--color <COLOR>`
+- `--alias`
 - `--url <URL>`
 
 <details>
@@ -230,7 +239,7 @@ purr query whiskers [--is <STATE>] [-n | --not] [-c | --count | -p | --percentag
 <summary>Examples</summary>
 
 - Get the overall statistics of the Whiskerification process.
-  
+
   ```
   purr query whiskers
   ```
@@ -253,7 +262,7 @@ purr query whiskers [--is <STATE>] [-n | --not] [-c | --count | -p | --percentag
   purr query whiskers --is not-applicable
   ```
 
-- List repositories Whiskers *is* applicable for.
+- List repositories Whiskers _is_ applicable for.
 
   ```
   purr query whiskers --is not-applicable --not
@@ -266,172 +275,15 @@ purr query whiskers [--is <STATE>] [-n | --not] [-c | --count | -p | --percentag
 The `init` command accepts each value (name, categories, etc.) via arguments, though if not provided a series of prompts will be displayed instead.
 
 ```
-purr init [PROPERTIES]
+purr init <TEMPLATE> [PROPERTIES]
 ```
 
-**Properties**:
+#### Templates
 
-- `--name <NAME>`
-- `--url <URL>`
-
-### `userstyles`
-
-#### `query`
-
-```
-purr userstyles query [--for <USERSTYLE>] [-g | --get] [-c | --count]
-```
-
-Query the userstyles.yml data source. With no arguments, all userstyles are displayed.
-
-<details>
-<summary>Examples</summary>
-
-- List all userstyles.
-
-  ```
-  purr userstyles query
-  ```
-
-- Count the number of userstyles.
-
-  ```
-  purr userstyles query --count
-  ```
-
-
-- List the names of all userstyles.
-
-  ```
-  purr userstyles query --get name
-  ```
-
-- List the current maintainers of the `youtube` userstyle.
-
-  ```
-  purr userstyles query --for youtube --get current-maintainers 
-  ```
-
-</details>
-
-##### `maintained`
-
-```
-purr userstyles query maintained [--by <NAME>] [-n | --not] [-c | --count]
-```
-
-<details>
-<summary>Examples</summary>
-
-- List maintained userstyles.
-
-  ```
-  purr userstyles query maintained
-  ```
-
-- Count the number of maintained userstyles.
-
-  ```
-  purr userstyles query maintained --count
-  ```
-
-- List *un*maintained userstyles.
-
-  ```
-  purr userstyles query maintained --not
-  ```
-
-- Count the number of *un*maintained userstyles.
-
-  ```
-  purr userstyles query maintained --not --count
-  ```
-
-- List userstyles maintained by `<username>`.
-
-  ```
-  purr userstyles query maintained --by "<username>"
-  ```
-
-- Count the number of userstyles maintained by `<username>`.
-
-  ```
-  purr userstyles query maintained --by "<username>" --count
-  ```
-
-- List userstyles _not_ maintained by `<username>`.
-
-  ```
-  purr userstyles query maintained --by "<username>" --not
-  ```
-
-- Count the number of userstyles _not_ maintained by `<username>`.
-
-  ```
-  purr userstyles query maintained --by "<username>" --not --count
-  ```
-
-</details>
-
-##### `has`
-
-```
-purr userstyles query has [PROPERTIES] [-n | --not] [-c | --count]
-```
-
-**Properties:**
-
-- `--name <NAME>`
-- `--category <CATEGORIES>`
-- `--icon <ICON>`
-- `--color <COLOR>`
-- `--app-link <APP_LINK>`
-
-<details>
-<summary>Examples</summary>
-
-- List userstyles with `color` set to `mauve`.
-
-  ```
-  purr userstyles query has --color mauve
-  ```
-
-- Count the number of userstyles that have `color` set to `mauve`.
-
-  ```
-  purr userstyles query has --color mauve --count
-  ```
-
-- Count the number of userstyles that have `color` set to anything other than `mauve`.
-
-  ```
-  purr userstyles query has --color mauve --not --count
-  ```
-
-- List userstyles that do not have `icon` defined.
-
-  ```
-  purr userstyles query has --icon --not
-  ```
-
-</details>
-
-#### `init`
-
-The `init` command accepts each value (name, categories, etc.) via arguments, though if not provided a series of prompts will be displayed instead.
-
-```
-purr userstyles init [PROPERTIES]
-```
-
-**Properties**:
-
-- `--name <NAME>`
-- `--category <CATEGORIES>`
-- `--icon <ICON>`
-- `--color <COLOR>`
-- `--app-link <APP_LINK>`
-
+| Template    | Available Properties/Flags                 |
+| ----------- | ------------------------------------------ |
+| `port`      | `name`, `url`                              |
+| `userstyle` | `name`, `category`, `icon`, `color`, `url` |
 
 ### `whiskerify`
 
@@ -439,7 +291,7 @@ purr userstyles init [PROPERTIES]
 purr whiskerify <PATH> [-o | --output <PATH>]
 ```
 
-Whiskerify a file by replacing Catppuccin colors and names with Tera expressions. Prints the output or writes to the `--output` file path if passed.
+Whiskerify a file by replacing Catppuccin colors and names with Tera expressions. Prints the output or writes to the `--output` file path if given.
 
 ## License
 

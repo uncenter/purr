@@ -1,19 +1,13 @@
-use std::{env, fs, io, path};
-
-use color_eyre::eyre::{bail, eyre, Context, Result};
-use convert_case::Casing;
-use inquire::validator::Validation;
-use inquire::Text;
+use color_eyre::eyre::{eyre, Context, Result};
 use serde_json::Value;
-use url::Url;
 
-use crate::cache::Cache;
-use crate::cli::{Key, Query, WhiskersCustomProperty};
-use crate::github::{
-	self, fetch_all_repositories, fetch_whiskers_custom_property, RepositoryResponse,
+use crate::{
+	cache::Cache,
+	cli::{Key, Query, WhiskersCustomProperty},
+	github::{self, fetch_all_repositories, fetch_whiskers_custom_property, RepositoryResponse},
+	models::{self, ports::Port, shared::StringOrStrings},
 };
-use crate::models::ports::Root;
-use crate::models::shared::StringOrStrings;
+
 use crate::{
 	display_json_or_count, fetch_text, get_key, is_booleanish_match, matches_current_maintainer,
 };
@@ -24,17 +18,40 @@ pub fn query(
 	r#for: Option<String>,
 	count: bool,
 	get: Key,
+	include_userstyles: bool,
+	only_userstyles: bool,
 ) -> Result<()> {
-	let ports = cache.get_or("ports-yml", || {
+	let ports = serde_yaml::from_str::<models::ports::Root>(&cache.get_or("ports-yml", || {
 		fetch_text("https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml")
-	})?;
-	let data: Root = serde_yaml::from_str(&ports).unwrap();
+	})?)
+	.unwrap()
+	.ports
+	.into_iter()
+	.collect::<Vec<_>>();
+
+	let userstyles = serde_yaml::from_str::<models::userstyles::Root>(
+		&cache.get_or("userstyles-yml", || {
+			fetch_text("https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml")
+		})?,
+	)
+	.unwrap()
+	.userstyles
+	.into_iter()
+	.map(|(key, userstyle)| (key, Port::from(userstyle.clone())))
+	.collect::<Vec<_>>();
+
+	let data = if only_userstyles {
+		userstyles
+	} else if include_userstyles {
+		[ports, userstyles].concat()
+	} else {
+		ports
+	}
+	.into_iter();
 
 	match command {
 		Some(Query::Maintained { by, options }) => {
 			let result = data
-				.ports
-				.into_iter()
 				.filter(|port| {
 					let current_maintainers = &port.1.current_maintainers;
 					let matches = matches_current_maintainer(current_maintainers, &by);
@@ -62,8 +79,6 @@ pub fn query(
 			options,
 		}) => {
 			let result = data
-				.ports
-				.into_iter()
 				.filter(|port| {
 					let matches: bool = {
 						if let Some(name) = &name {
@@ -137,10 +152,10 @@ pub fn query(
 			token,
 		}) => {
 			if let Some(repository) = r#for {
-				let data = github::rest(&format!("repos/catppuccin/{repository}"), Some(token))?
+				let res = github::rest(&format!("repos/catppuccin/{repository}"), Some(token))?
 					.json::<RepositoryResponse>()?;
 
-				println!("{}", data.stargazers_count);
+				println!("{}", res.stargazers_count);
 			} else {
 				let repositories = fetch_all_repositories(&token)?;
 
@@ -233,9 +248,7 @@ pub fn query(
 				println!(
 					"{}",
 					serde_json::to_string_pretty(
-						data.ports
-							.into_iter()
-							.filter(|port| port.0.to_lowercase() == r#for.to_lowercase())
+						data.filter(|port| port.0.to_lowercase() == r#for.to_lowercase())
 							.map(|port| get_key(port, get))
 							.collect::<Vec<_>>()
 							.first()
@@ -245,78 +258,12 @@ pub fn query(
 				);
 			} else {
 				display_json_or_count(
-					&data
-						.ports
-						.into_iter()
-						.map(|port| get_key(port, get))
-						.collect::<Vec<_>>(),
+					&data.map(|port| get_key(port, get)).collect::<Vec<_>>(),
 					count,
 				)?;
 			}
 		}
 	}
-
-	Ok(())
-}
-
-pub fn init(name: Option<String>, url: Option<String>) -> Result<()> {
-	let name = name.unwrap_or_else(|| {
-		Text::new("What is the name of this port?")
-			.prompt()
-			.unwrap()
-	});
-	let name_kebab = name.to_case(convert_case::Case::Kebab);
-
-	let url = url.unwrap_or_else(|| {
-		Text::new("What is the URL of this port?")
-			.with_validator(|input: &str| {
-				if Url::parse(input).is_ok() {
-					Ok(Validation::Valid)
-				} else {
-					Ok(Validation::Invalid("Input must be a valid URL.".into()))
-				}
-			})
-			.prompt()
-			.unwrap()
-	});
-
-	let target = env::current_dir()?.join(path::PathBuf::from(&name_kebab));
-	if target.exists() {
-		bail!("Directory already exists",)
-	}
-	let response = github::rest("repos/catppuccin/template/tarball", None)?;
-
-	let temp = env::temp_dir();
-	let tarball = temp.join("repo.tar.gz");
-	let mut tarball_file = fs::File::create(&tarball)?;
-	io::copy(&mut response.bytes()?.as_ref(), &mut tarball_file)?;
-	let tar_gz = fs::File::open(tarball)?;
-	let tar = flate2::read::GzDecoder::new(tar_gz);
-	let mut archive = tar::Archive::new(tar);
-	let temp_unpacked = temp.join("unpacked");
-	archive.unpack(&temp_unpacked)?;
-
-	for entry in fs::read_dir(&temp_unpacked)? {
-		let entry = entry?;
-		let path = entry.path();
-		fs::rename(path, &target)?;
-	}
-
-	let readme = &target.join("README.md");
-	let contents = fs::read_to_string(readme)?
-		.replace(
-			"<a href=\"https://github.com/catppuccin/template\">App</a>",
-			&format!("<a href=\"{url}\">{name}</a>"),
-		)
-		.replace(
-			"catppuccin/template",
-			&format!("catppuccin/{}", &name_kebab),
-		)
-		.replace(
-			"https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/previews/",
-			"assets/",
-		);
-	fs::write(readme, contents)?;
 
 	Ok(())
 }
