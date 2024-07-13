@@ -10,13 +10,13 @@ use std::{
 
 static ONE_DAY_IN_SECONDS: u64 = 24 * 60 * 60;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Entry {
 	timestamp: SystemTime,
 	data: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Cache {
 	path: PathBuf,
 	entries: HashMap<String, Entry>,

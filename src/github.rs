@@ -8,6 +8,8 @@ use repositories::{
 	RepositoriesOrganizationRepositories, RepositoriesOrganizationRepositoriesNodes,
 };
 
+use crate::cache::Cache;
+
 #[derive(GraphQLQuery)]
 #[graphql(
 	schema_path = "src/schema.graphql",
@@ -91,7 +93,17 @@ pub struct CustomProperty {
 	pub value: String,
 }
 
-pub fn fetch_whiskers_custom_property(repository: &str, token: String) -> Result<String> {
+pub fn fetch_whiskers_custom_property(
+	mut cache: Cache,
+	repository: &str,
+	token: String,
+) -> Result<String> {
+	let cache_id = &format!("whiskers-{repository}");
+	if let Some(cached) = cache.get(&cache_id) {
+		println!("using cached status");
+		return Ok(cached.to_string());
+	}
+
 	let props = rest(
 		&format!("repos/catppuccin/{repository}/properties/values"),
 		Some(token),
@@ -100,7 +112,7 @@ pub fn fetch_whiskers_custom_property(repository: &str, token: String) -> Result
 
 	for prop in props {
 		if prop.property_name == "whiskers" {
-			return Ok(prop.value);
+			return cache.save(&cache_id, prop.value);
 		}
 	}
 
