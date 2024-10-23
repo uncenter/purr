@@ -24,7 +24,7 @@ css-colors = "1.0.1"
 csscolorparser = { version = "0.6.2", features = ["rgb"] }
 etcetera = "0.8.0"
 fancy-regex = "0.13.0"
-flate2 = "1.0.31"
+flate2 = "1.0.34"
 graphql_client = { version = "0.14.0", features = ["reqwest-blocking"] }
 inquire = "0.7.5"
 log = "0.4.22"
