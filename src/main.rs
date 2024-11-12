@@ -42,7 +42,11 @@ fn main() -> Result<()> {
 			only_userstyles,
 		)?,
 		Commands::Init { command } => match command {
-			Template::Port { name, url } => init::port(name, url)?,
+			Template::Port {
+				name,
+				url,
+				whiskers,
+			} => init::port(name, url, whiskers)?,
 			Template::Userstyle {
 				name,
 				categories,

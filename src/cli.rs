@@ -73,6 +73,9 @@ pub enum Template {
 		/// URL to the application
 		#[arg(long, value_parser = valid_url)]
 		url: Option<String>,
+
+		#[arg(long, action = ArgAction::Set, num_args = 0..=1, default_missing_value = "true")]
+		whiskers: Option<bool>,
 	},
 	/// Initialize a new userstyle from the template
 	Userstyle {
