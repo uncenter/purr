@@ -137,7 +137,7 @@ pub enum Query {
 		r#for: Option<String>,
 
 		/// Whether to include archived repositories in the total count
-		#[arg(long)]
+		#[arg(long, action = ArgAction::Set, num_args = 0..=1, default_value = "false", default_missing_value = "true")]
 		archived: bool,
 
 		#[arg(long, env = "GITHUB_TOKEN")]
