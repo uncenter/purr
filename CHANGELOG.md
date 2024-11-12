@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/uncenter/purr/compare/v1.0.0...v1.0.1) (2024-11-12)
+
+
+### Bug Fixes
+
+* **query/stars:** fix `archived` flag behavior ([0262acf](https://github.com/uncenter/purr/commit/0262acf05b467b5d950c1930c2f5dfb2bb381b99))
+
 ## [1.0.0](https://github.com/uncenter/purr/compare/v0.5.0...v1.0.0) (2024-07-04)
 
 
