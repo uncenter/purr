@@ -21,7 +21,7 @@ clap = { version = "4.5.20", features = ["derive", "env"] }
 color-eyre = "0.6.3"
 convert_case = "0.6.0"
 css-colors = "1.0.1"
-csscolorparser = { version = "0.6.2", features = ["rgb"] }
+csscolorparser = { version = "0.7.0", features = ["rgb"] }
 etcetera = "0.8.0"
 fancy-regex = "0.13.0"
 flate2 = "1.0.34"
