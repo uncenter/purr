@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/uncenter/purr/compare/v1.0.1...v1.1.0) (2024-11-12)
+
+
+### Features
+
+* **init/port:** support whiskers port template, remove .gitkeep file, update author name ([3440c8d](https://github.com/uncenter/purr/commit/3440c8d0c514e2b1d54f6225b519f3103cc38fda))
+
 ## [1.0.1](https://github.com/uncenter/purr/compare/v1.0.0...v1.0.1) (2024-11-12)
 
 
