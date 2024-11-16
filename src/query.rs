@@ -185,7 +185,8 @@ pub fn query(
 			token,
 		}) => {
 			if let Some(repository) = r#for {
-				let status = fetch_whiskers_custom_property(&repository, token)?;
+				let status = fetch_whiskers_custom_property(cache, &repository, token)?;
+
 				println!(
 					"{}",
 					if let Some(is) = is {
@@ -206,9 +207,12 @@ pub fn query(
 					.flatten()
 					.filter(|repo| !repo.is_archived)
 					.filter_map(|repository| {
-						let status =
-							fetch_whiskers_custom_property(&repository.name, token.clone())
-								.unwrap();
+						let status = fetch_whiskers_custom_property(
+							cache.clone(),
+							&repository.name,
+							token.clone(),
+						)
+						.unwrap();
 
 						if status == WhiskersCustomProperty::True.to_string() {
 							found_true += 1;
