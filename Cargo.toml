@@ -19,7 +19,7 @@ path = "src/main.rs"
 catppuccin = { version = "2.4.0", features = ["css-colors"] }
 clap = { version = "4.5.20", features = ["derive", "env"] }
 color-eyre = "0.6.3"
-convert_case = "0.6.0"
+convert_case = "0.7.1"
 css-colors = "1.0.1"
 csscolorparser = { version = "0.6.2", features = ["rgb"] }
 etcetera = "0.8.0"
