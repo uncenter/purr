@@ -17,26 +17,26 @@ path = "src/main.rs"
 
 [dependencies]
 catppuccin = { version = "2.4.0", features = ["css-colors"] }
-clap = { version = "4.5.20", features = ["derive", "env"] }
+clap = { version = "4.5.26", features = ["derive", "env"] }
 color-eyre = "0.6.3"
 convert_case = "0.6.0"
 css-colors = "1.0.1"
 csscolorparser = { version = "0.6.2", features = ["rgb"] }
 etcetera = "0.8.0"
 fancy-regex = "0.14.0"
-flate2 = "1.0.34"
+flate2 = "1.0.35"
 graphql_client = { version = "0.14.0", features = ["reqwest-blocking"] }
 inquire = "0.7.5"
-log = "0.4.22"
+log = "0.4.25"
 pretty_env_logger = "0.5.0"
 reqwest = { version = "0.11.27", features = ["blocking"] }
-serde = { version = "1.0.215", features = ["derive"] }
-serde_json = "1.0.132"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.135"
 serde_yaml = "0.9.34"
 strsim = "0.11.1"
 strum = { version = "0.26.3", features = ["derive"] }
 tar = "0.4.43"
-url = "2.5.2"
+url = "2.5.4"
 
 [profile.release]
 strip = true
