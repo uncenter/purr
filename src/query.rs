@@ -6,9 +6,7 @@ use serde_json::Value;
 use crate::{
 	cache::Cache,
 	cli::{Key, Query, WhiskersCustomProperty},
-	github::{
-		self, cached_fetch_all_repositories, fetch_whiskers_custom_property, RepositoryResponse,
-	},
+	github::{self, fetch_all_repositories, fetch_whiskers_custom_property, RepositoryResponse},
 	models::{self, ports::Port, shared::StringOrStrings},
 };
 
@@ -163,7 +161,7 @@ pub fn query(
 
 				println!("{}", res.stargazers_count);
 			} else {
-				let repositories = cached_fetch_all_repositories(cache, &token)?;
+				let repositories = fetch_all_repositories(cache, &token)?;
 
 				let stars: i64 = repositories
 					.iter()
@@ -214,7 +212,7 @@ pub fn query(
 				let mut found_false = 0;
 				let mut found_na = 0;
 
-				let repositories = cached_fetch_all_repositories(cache, &token)?;
+				let repositories = fetch_all_repositories(cache, &token)?;
 				let result = repositories
 					.iter()
 					.flatten()

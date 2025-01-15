@@ -36,42 +36,38 @@ pub fn fetch_repositories(
 		.repositories
 }
 
-fn fetch_all_repositories(
-	token: &str,
-) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>> {
-	let client = Client::builder()
-		.user_agent("graphql-rust/0.10.0")
-		.default_headers(
-			std::iter::once((
-				reqwest::header::AUTHORIZATION,
-				reqwest::header::HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
-			))
-			.collect(),
-		)
-		.build()?;
-
-	let mut cursor = None;
-	let mut repositories: Vec<Option<RepositoriesOrganizationRepositoriesNodes>> = vec![];
-
-	loop {
-		let data = fetch_repositories(&client, cursor);
-
-		repositories.extend(data.nodes.expect("repositories nodes is null"));
-
-		if !data.page_info.has_next_page {
-			break;
-		}
-		cursor = data.page_info.end_cursor;
-	}
-
-	Ok(repositories)
-}
-
-pub fn cached_fetch_all_repositories(
+pub fn fetch_all_repositories(
 	cache: &mut Cache,
 	token: &str,
 ) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>> {
-	cache.get_or("all-repositories", || fetch_all_repositories(token))
+	cache.get_or("all-repositories", || {
+		let client = Client::builder()
+			.user_agent("catppuccin-purr")
+			.default_headers(
+				std::iter::once((
+					reqwest::header::AUTHORIZATION,
+					reqwest::header::HeaderValue::from_str(&format!("Bearer {token}"))?,
+				))
+				.collect(),
+			)
+			.build()?;
+
+		let mut cursor = None;
+		let mut repositories: Vec<Option<RepositoriesOrganizationRepositoriesNodes>> = vec![];
+
+		loop {
+			let data = fetch_repositories(&client, cursor);
+
+			repositories.extend(data.nodes.expect("repositories nodes is null"));
+
+			if !data.page_info.has_next_page {
+				break;
+			}
+			cursor = data.page_info.end_cursor;
+		}
+
+		Ok(repositories)
+	})
 }
 
 pub fn rest(path: &str, token: Option<String>) -> Result<reqwest::blocking::Response> {
