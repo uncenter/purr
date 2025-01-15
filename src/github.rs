@@ -1,4 +1,4 @@
-use color_eyre::{eyre::bail, Result};
+use color_eyre::Result;
 
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
@@ -109,11 +109,10 @@ pub fn fetch_whiskers_status(cache: &mut Cache, repository: &str, token: String)
 	)?
 	.json::<Vec<CustomProperty>>()?;
 
-	for prop in props {
-		if prop.property_name == "whiskers" {
-			return cache.save(&cache_id, prop.value);
-		}
-	}
+	let property = props
+		.iter()
+		.find(|prop| prop.property_name == "whiskers")
+		.expect("whiskers custom property should exist on all repositories");
 
-	bail!("whiskers custom property should exist on all repositories")
+	cache.save(&cache_id, property.value.clone())
 }
