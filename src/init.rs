@@ -75,7 +75,7 @@ pub fn port(name: Option<String>, url: Option<String>) -> Result<()> {
 }
 
 pub fn userstyle(
-	mut cache: Cache,
+	cache: &mut Cache,
 	name: Option<String>,
 	categories: Option<Vec<String>>,
 	icon: Option<String>,

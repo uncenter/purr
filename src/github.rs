@@ -1,6 +1,6 @@
 use color_eyre::{eyre::bail, Result};
 
-use reqwest::{blocking::Client, Error};
+use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
@@ -14,7 +14,7 @@ use crate::cache::Cache;
 #[graphql(
 	schema_path = "src/schema.graphql",
 	query_path = "src/repositories.graphql",
-	response_derives = "Debug"
+	response_derives = "Debug,Serialize,Clone"
 )]
 struct Repositories;
 
@@ -36,9 +36,9 @@ pub fn fetch_repositories(
 		.repositories
 }
 
-pub fn fetch_all_repositories(
+fn fetch_all_repositories(
 	token: &str,
-) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>, Error> {
+) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>> {
 	let client = Client::builder()
 		.user_agent("graphql-rust/0.10.0")
 		.default_headers(
@@ -65,6 +65,13 @@ pub fn fetch_all_repositories(
 	}
 
 	Ok(repositories)
+}
+
+pub fn cached_fetch_all_repositories(
+	cache: &mut Cache,
+	token: &str,
+) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>> {
+	cache.get_or("all-repositories", || fetch_all_repositories(token))
 }
 
 pub fn rest(path: &str, token: Option<String>) -> Result<reqwest::blocking::Response> {
@@ -94,12 +101,12 @@ pub struct CustomProperty {
 }
 
 pub fn fetch_whiskers_custom_property(
-	mut cache: Cache,
+	cache: &mut Cache,
 	repository: &str,
 	token: String,
 ) -> Result<String> {
 	let cache_id = &format!("whiskers-{repository}");
-	if let Some(cached) = cache.get(&cache_id) {
+	if let Some(cached) = cache.get::<String>(&cache_id) {
 		println!("using cached status");
 		return Ok(cached.to_string());
 	}
