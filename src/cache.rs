@@ -10,6 +10,7 @@ use std::{
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Entry {
+	// TODO: Simplify timestamp; storing full SystemTime struct/object is inefficient compared to just the (nano)?seconds as integer.
 	timestamp: SystemTime,
 	data: serde_json::Value,
 }
