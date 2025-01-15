@@ -6,7 +6,7 @@ use serde_json::Value;
 use crate::{
 	cache::Cache,
 	cli::{Key, Query, WhiskersCustomProperty},
-	github::{self, fetch_all_repositories, fetch_whiskers_custom_property, RepositoryResponse},
+	github::{self, fetch_all_repositories, fetch_whiskers_status, RepositoryResponse},
 	models::{self, ports::Port, shared::StringOrStrings},
 };
 
@@ -195,7 +195,7 @@ pub fn query(
 				let status = match whiskers_statuses.get(&repository) {
 					Some(status) => status.to_owned(),
 					// TODO: Save fetched custom properties to HashMap.
-					None => fetch_whiskers_custom_property(cache, &repository, token)?,
+					None => fetch_whiskers_status(cache, &repository, token)?,
 				};
 
 				println!(
@@ -219,8 +219,7 @@ pub fn query(
 					.filter(|repo| !repo.is_archived)
 					.filter_map(|repository| {
 						let status =
-							fetch_whiskers_custom_property(cache, &repository.name, token.clone())
-								.unwrap();
+							fetch_whiskers_status(cache, &repository.name, token.clone()).unwrap();
 
 						if status == WhiskersCustomProperty::True.to_string() {
 							found_true += 1;

@@ -96,11 +96,7 @@ pub struct CustomProperty {
 	pub value: String,
 }
 
-pub fn fetch_whiskers_custom_property(
-	cache: &mut Cache,
-	repository: &str,
-	token: String,
-) -> Result<String> {
+pub fn fetch_whiskers_status(cache: &mut Cache, repository: &str, token: String) -> Result<String> {
 	let cache_id = &format!("whiskers-{repository}");
 	if let Some(cached) = cache.get::<String>(&cache_id) {
 		println!("using cached status");
