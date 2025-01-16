@@ -1,6 +1,6 @@
-use color_eyre::{eyre::bail, Result};
+use color_eyre::Result;
 
-use reqwest::{blocking::Client, Error};
+use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
@@ -8,11 +8,13 @@ use repositories::{
 	RepositoriesOrganizationRepositories, RepositoriesOrganizationRepositoriesNodes,
 };
 
+use crate::cache::Cache;
+
 #[derive(GraphQLQuery)]
 #[graphql(
 	schema_path = "src/schema.graphql",
 	query_path = "src/repositories.graphql",
-	response_derives = "Debug"
+	response_derives = "Debug,Serialize,Clone"
 )]
 struct Repositories;
 
@@ -35,34 +37,37 @@ pub fn fetch_repositories(
 }
 
 pub fn fetch_all_repositories(
+	cache: &mut Cache,
 	token: &str,
-) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>, Error> {
-	let client = Client::builder()
-		.user_agent("graphql-rust/0.10.0")
-		.default_headers(
-			std::iter::once((
-				reqwest::header::AUTHORIZATION,
-				reqwest::header::HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
-			))
-			.collect(),
-		)
-		.build()?;
+) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>> {
+	cache.get_or("all-repositories", || {
+		let client = Client::builder()
+			.user_agent("catppuccin-purr")
+			.default_headers(
+				std::iter::once((
+					reqwest::header::AUTHORIZATION,
+					reqwest::header::HeaderValue::from_str(&format!("Bearer {token}"))?,
+				))
+				.collect(),
+			)
+			.build()?;
 
-	let mut cursor = None;
-	let mut repositories: Vec<Option<RepositoriesOrganizationRepositoriesNodes>> = vec![];
+		let mut cursor = None;
+		let mut repositories: Vec<Option<RepositoriesOrganizationRepositoriesNodes>> = vec![];
 
-	loop {
-		let data = fetch_repositories(&client, cursor);
+		loop {
+			let data = fetch_repositories(&client, cursor);
 
-		repositories.extend(data.nodes.expect("repositories nodes is null"));
+			repositories.extend(data.nodes.expect("repositories nodes is null"));
 
-		if !data.page_info.has_next_page {
-			break;
+			if !data.page_info.has_next_page {
+				break;
+			}
+			cursor = data.page_info.end_cursor;
 		}
-		cursor = data.page_info.end_cursor;
-	}
 
-	Ok(repositories)
+		Ok(repositories)
+	})
 }
 
 pub fn rest(path: &str, token: Option<String>) -> Result<reqwest::blocking::Response> {
@@ -91,18 +96,22 @@ pub struct CustomProperty {
 	pub value: String,
 }
 
-pub fn fetch_whiskers_custom_property(repository: &str, token: String) -> Result<String> {
+pub fn fetch_whiskers_status(cache: &mut Cache, repository: &str, token: String) -> Result<String> {
+	let cache_key = format!("whiskers-{repository}");
+	if let Some(cached) = cache.get::<String>(&cache_key) {
+		return Ok(cached.to_string());
+	}
+
 	let props = rest(
 		&format!("repos/catppuccin/{repository}/properties/values"),
 		Some(token),
 	)?
 	.json::<Vec<CustomProperty>>()?;
 
-	for prop in props {
-		if prop.property_name == "whiskers" {
-			return Ok(prop.value);
-		}
-	}
+	let property = props
+		.iter()
+		.find(|prop| prop.property_name == "whiskers")
+		.expect("whiskers custom property should exist on all repositories");
 
-	bail!("whiskers custom property should exist on all repositories")
+	cache.save(&cache_key, property.value.clone())
 }

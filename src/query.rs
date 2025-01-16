@@ -4,16 +4,16 @@ use serde_json::Value;
 use crate::{
 	cache::Cache,
 	cli::{Key, Query, WhiskersCustomProperty},
-	github::{self, fetch_all_repositories, fetch_whiskers_custom_property, RepositoryResponse},
+	github::{self, fetch_all_repositories, fetch_whiskers_status, RepositoryResponse},
 	models::{self, ports::Port, shared::StringOrStrings},
 };
 
 use crate::{
-	display_json_or_count, fetch_text, get_key, is_booleanish_match, matches_current_maintainer,
+	display_json_or_count, fetch_yaml, get_key, is_booleanish_match, matches_current_maintainer,
 };
 
 pub fn query(
-	mut cache: Cache,
+	cache: &mut Cache,
 	command: Option<Query>,
 	r#for: Option<String>,
 	count: bool,
@@ -21,24 +21,26 @@ pub fn query(
 	include_userstyles: bool,
 	only_userstyles: bool,
 ) -> Result<()> {
-	let ports = serde_yaml::from_str::<models::ports::Root>(&cache.get_or("ports-yml", || {
-		fetch_text("https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml")
-	})?)
-	.unwrap()
-	.ports
-	.into_iter()
-	.collect::<Vec<_>>();
+	let ports = cache
+		.get_or("ports-yml", || {
+			fetch_yaml::<models::ports::Root>(
+				"https://github.com/catppuccin/catppuccin/raw/main/resources/ports.yml",
+			)
+		})?
+		.ports
+		.into_iter()
+		.collect::<Vec<_>>();
 
-	let userstyles = serde_yaml::from_str::<models::userstyles::Root>(
-		&cache.get_or("userstyles-yml", || {
-			fetch_text("https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml")
-		})?,
-	)
-	.unwrap()
-	.userstyles
-	.into_iter()
-	.map(|(key, userstyle)| (key, Port::from(userstyle.clone())))
-	.collect::<Vec<_>>();
+	let userstyles = cache
+		.get_or("userstyles-yml", || {
+			fetch_yaml::<models::userstyles::Root>(
+				"https://github.com/catppuccin/userstyles/raw/main/scripts/userstyles.yml",
+			)
+		})?
+		.userstyles
+		.into_iter()
+		.map(|(key, userstyle)| (key, Port::from(userstyle)))
+		.collect::<Vec<_>>();
 
 	let data = if only_userstyles {
 		userstyles
@@ -157,7 +159,7 @@ pub fn query(
 
 				println!("{}", res.stargazers_count);
 			} else {
-				let repositories = fetch_all_repositories(&token)?;
+				let repositories = fetch_all_repositories(cache, &token)?;
 
 				let stars: i64 = repositories
 					.iter()
@@ -185,7 +187,8 @@ pub fn query(
 			token,
 		}) => {
 			if let Some(repository) = r#for {
-				let status = fetch_whiskers_custom_property(&repository, token)?;
+				let status = fetch_whiskers_status(cache, &repository, token)?;
+
 				println!(
 					"{}",
 					if let Some(is) = is {
@@ -200,15 +203,14 @@ pub fn query(
 				let mut found_false = 0;
 				let mut found_na = 0;
 
-				let repositories = fetch_all_repositories(&token)?;
+				let repositories = fetch_all_repositories(cache, &token)?;
 				let result = repositories
 					.iter()
 					.flatten()
 					.filter(|repo| !repo.is_archived)
 					.filter_map(|repository| {
 						let status =
-							fetch_whiskers_custom_property(&repository.name, token.clone())
-								.unwrap();
+							fetch_whiskers_status(cache, &repository.name, token.clone()).unwrap();
 
 						if status == WhiskersCustomProperty::True.to_string() {
 							found_true += 1;
@@ -231,6 +233,7 @@ pub fn query(
 					.collect::<Vec<_>>();
 
 				if is.is_none() {
+					// TODO: Improve Whiskers status output formatting.
 					println!(
 						"true: {}, false: {}, n/a: {} ({:.2}%)",
 						found_true,

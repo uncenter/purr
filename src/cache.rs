@@ -1,5 +1,5 @@
 use color_eyre::eyre::Result;
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{
 	collections::HashMap,
 	fs,
@@ -8,23 +8,24 @@ use std::{
 	time::SystemTime,
 };
 
-static ONE_DAY_IN_SECONDS: u64 = 24 * 60 * 60;
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Entry {
+	// TODO: Simplify timestamp; storing full SystemTime struct/object is inefficient compared to just the (nano)?seconds as integer.
 	timestamp: SystemTime,
-	data: String,
+	data: serde_json::Value,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Cache {
 	path: PathBuf,
 	entries: HashMap<String, Entry>,
 	refresh: bool,
+	entry_duration_seconds: u64,
 }
 
 impl Cache {
-	pub fn new(path: PathBuf, refresh: bool) -> Self {
+	/// Initializes a new cache, with timestamped data entries saved to the specified path as JSON.
+	pub fn new(path: PathBuf, refresh: bool, entry_duration_seconds: u64) -> Self {
 		let entries = match fs::read_to_string(&path) {
 			Ok(contents) => serde_json::from_str(&contents).unwrap_or_default(),
 			Err(_) => {
@@ -37,53 +38,55 @@ impl Cache {
 			path,
 			entries,
 			refresh,
+			entry_duration_seconds,
 		}
 	}
 
-	pub fn get(&self, key: &str) -> Option<&String> {
+	/// Retrieve a keyed value from the cache store, returning `None` if hard refresh is enabled in the cache settings or if the entry's timestamp is older than the specified maximum duration.
+	pub fn get<T: DeserializeOwned>(&self, key: &str) -> Option<T> {
 		if self.refresh {
 			return None;
 		}
-		match self.entries.get(key) {
-			Some(entry) => {
-				let diff = SystemTime::now()
-					.duration_since(entry.timestamp)
-					.unwrap()
-					.as_secs();
-				if diff < ONE_DAY_IN_SECONDS {
-					Some(&entry.data)
-				} else {
-					None
-				}
+		self.entries.get(key).and_then(|entry| {
+			let diff = SystemTime::now()
+				.duration_since(entry.timestamp)
+				.unwrap()
+				.as_secs();
+			if diff < self.entry_duration_seconds {
+				serde_json::from_value(entry.data.clone()).ok()
+			} else {
+				None
 			}
-			None => None,
-		}
+		})
 	}
 
-	pub fn get_or<F>(&mut self, key: &str, fetch: F) -> Result<String>
+	/// Wrapper of the [`Cache::get`] function, accepting a closure for retrieving and then saving the value if the value is not present already or invalid.
+	pub fn get_or<T, F>(&mut self, key: &str, fetch: F) -> Result<T>
 	where
-		F: FnOnce() -> Result<String>,
+		T: Serialize + DeserializeOwned + Clone,
+		F: FnOnce() -> Result<T>,
 	{
-		if let Some(data) = self.get(key) {
-			return Ok(data.clone());
+		if let Some(data) = self.get::<T>(key) {
+			return Ok(data);
 		}
 		let value = fetch()?;
-		self.save(key, value.clone())?;
-		Ok(value)
+		self.save(key, value)
 	}
 
-	pub fn save(&mut self, key: &str, value: String) -> Result<String> {
+	/// Save a value under a key to the cache store, returning that same value.
+	pub fn save<T: Serialize>(&mut self, key: &str, value: T) -> Result<T> {
 		self.entries.insert(
 			key.to_string(),
 			Entry {
 				timestamp: SystemTime::now(),
-				data: value.clone(),
+				data: serde_json::to_value(&value)?,
 			},
 		);
 		self.save_to_file()?;
 		Ok(value)
 	}
 
+	/// Save the cache to the store path (specified at cache initialization).
 	fn save_to_file(&self) -> io::Result<()> {
 		let mut file = fs::File::create(&self.path)?;
 		file.write_all(serde_json::to_string(&self.entries)?.as_bytes())

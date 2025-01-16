@@ -7,6 +7,8 @@ use clap::Parser;
 use color_eyre::eyre::Result;
 use etcetera::{choose_base_strategy, BaseStrategy};
 
+static ONE_DAY_IN_SECONDS: u64 = 24 * 60 * 60;
+
 fn main() -> Result<()> {
 	color_eyre::install()?;
 	pretty_env_logger::formatted_builder()
@@ -15,12 +17,13 @@ fn main() -> Result<()> {
 
 	let args: Cli = Cli::parse();
 
-	let cache = Cache::new(
+	let mut cache = Cache::new(
 		choose_base_strategy()
 			.unwrap()
 			.cache_dir()
 			.join("purr/store.json"),
 		args.refresh,
+		ONE_DAY_IN_SECONDS,
 	);
 
 	match args.command {
@@ -33,7 +36,7 @@ fn main() -> Result<()> {
 			userstyles,
 			only_userstyles,
 		} => query::query(
-			cache,
+			&mut cache,
 			command,
 			r#for,
 			count,
@@ -53,7 +56,7 @@ fn main() -> Result<()> {
 				icon,
 				color,
 				url,
-			} => init::userstyle(cache, name, categories, icon, color, url)?,
+			} => init::userstyle(&mut cache, name, categories, icon, color, url)?,
 		},
 		Commands::Whiskerify { input, output } => whiskerify::handle(input, output)?,
 	}
