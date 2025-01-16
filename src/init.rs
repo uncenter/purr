@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::process::Command;
-use std::{env, fs, io, path};
+use std::{env, fs, io};
 
 use color_eyre::eyre::{bail, Result};
 use convert_case::Casing;
+use fancy_regex::Regex;
 use inquire::validator::Validation;
 use inquire::{Confirm, MultiSelect, Select, Text};
 use url::Url;
@@ -36,7 +38,7 @@ pub fn port(name: Option<String>, url: Option<String>, whiskers: Option<bool>) -
 
 	let whiskers = whiskers.unwrap_or_else(|| Confirm::new("Use Whiskers?").prompt().unwrap());
 
-	let target = env::current_dir()?.join(path::PathBuf::from(&name_kebab));
+	let target = env::current_dir()?.join(PathBuf::from(&name_kebab));
 	if target.exists() {
 		bail!("Directory already exists",)
 	}
@@ -124,10 +126,7 @@ pub fn userstyle(
 	url: Option<String>,
 ) -> Result<()> {
 	let cwd = env::current_dir()?;
-	if !cwd
-		.join(path::PathBuf::from("scripts/userstyles.yml"))
-		.exists()
-	{
+	if !cwd.join(PathBuf::from("scripts/userstyles.yml")).exists() {
 		bail!("Not in userstyles repository")
 	}
 
@@ -179,7 +178,7 @@ pub fn userstyle(
 			.unwrap()
 	});
 
-	let target = cwd.join(path::PathBuf::from("styles/".to_string() + &name_kebab));
+	let target = cwd.join(PathBuf::from("styles/".to_string() + &name_kebab));
 	if target.exists() {
 		bail!("Userstyle already exists",)
 	}
@@ -188,7 +187,7 @@ pub fn userstyle(
 	let mut template = cache
 		.get_or("userstyles-template", || {
 			fetch_text(
-				"https://github.com/catppuccin/userstyles/raw/main/template/catppuccin.user.css",
+				"https://github.com/catppuccin/userstyles/raw/main/template/catppuccin.user.less",
 			)
 		})?
 		.replace("<port-name> Catppuccin", &format!("{} Catppuccin", &name))
@@ -205,11 +204,11 @@ pub fn userstyle(
 		);
 
 	let comment_re =
-		fancy_regex::Regex::new(r"\/\*(?:(?!\*\/|==UserStyle==|prettier-ignore)[\s\S])*?\*\/")?;
+		Regex::new(r"(?m)^ +\/\*(?:(?!\*\/|==UserStyle==|deno-fmt-ignore)[\s\S])*?\*\/\n")?;
 	template = comment_re.replace_all(&template, "").to_string();
 
 	fs::write(
-		target.join(path::PathBuf::from("catppuccin.user.css")),
+		target.join(PathBuf::from("catppuccin.user.less")),
 		&template,
 	)?;
 
