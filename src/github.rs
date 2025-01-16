@@ -97,9 +97,8 @@ pub struct CustomProperty {
 }
 
 pub fn fetch_whiskers_status(cache: &mut Cache, repository: &str, token: String) -> Result<String> {
-	let cache_id = &format!("whiskers-{repository}");
-	if let Some(cached) = cache.get::<String>(&cache_id) {
-		println!("using cached status");
+	let cache_key = format!("whiskers-{repository}");
+	if let Some(cached) = cache.get::<String>(&cache_key) {
 		return Ok(cached.to_string());
 	}
 
@@ -114,5 +113,5 @@ pub fn fetch_whiskers_status(cache: &mut Cache, repository: &str, token: String)
 		.find(|prop| prop.property_name == "whiskers")
 		.expect("whiskers custom property should exist on all repositories");
 
-	cache.save(&cache_id, property.value.clone())
+	cache.save(&cache_key, property.value.clone())
 }

@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use color_eyre::eyre::{eyre, Context, Result};
 use serde_json::Value;
 
@@ -188,15 +186,8 @@ pub fn query(
 			count,
 			token,
 		}) => {
-			// TODO: Restore from cache first, default to empty HashMap.
-			let whiskers_statuses: HashMap<String, String> = HashMap::new();
-
 			if let Some(repository) = r#for {
-				let status = match whiskers_statuses.get(&repository) {
-					Some(status) => status.to_owned(),
-					// TODO: Save fetched custom properties to HashMap.
-					None => fetch_whiskers_status(cache, &repository, token)?,
-				};
+				let status = fetch_whiskers_status(cache, &repository, token)?;
 
 				println!(
 					"{}",
@@ -242,6 +233,7 @@ pub fn query(
 					.collect::<Vec<_>>();
 
 				if is.is_none() {
+					// TODO: Improve Whiskers status output formatting.
 					println!(
 						"true: {}, false: {}, n/a: {} ({:.2}%)",
 						found_true,
@@ -253,8 +245,6 @@ pub fn query(
 					display_json_or_count(&result, count)?;
 				}
 			}
-
-			// TODO: Save `whiskers_statuses` to cache.
 		}
 		None => {
 			if let Some(r#for) = r#for {

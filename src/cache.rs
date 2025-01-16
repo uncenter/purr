@@ -15,7 +15,7 @@ pub struct Entry {
 	data: serde_json::Value,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Cache {
 	path: PathBuf,
 	entries: HashMap<String, Entry>,
