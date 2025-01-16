@@ -56,7 +56,16 @@ fn main() -> Result<()> {
 				icon,
 				color,
 				url,
-			} => init::userstyle(&mut cache, name, categories, icon, color, url)?,
+				clear_comments,
+			} => init::userstyle(
+				&mut cache,
+				name,
+				categories,
+				icon,
+				color,
+				url,
+				clear_comments,
+			)?,
 		},
 		Commands::Whiskerify { input, output } => whiskerify::handle(input, output)?,
 	}

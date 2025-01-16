@@ -124,6 +124,7 @@ pub fn userstyle(
 	icon: Option<String>,
 	color: Option<String>,
 	url: Option<String>,
+	clear_comments: bool,
 ) -> Result<()> {
 	let cwd = env::current_dir()?;
 	if !cwd.join(PathBuf::from("scripts/userstyles.yml")).exists() {
@@ -203,9 +204,11 @@ pub fn userstyle(
 				.expect("App link should be a valid URL"),
 		);
 
-	let comment_re =
-		Regex::new(r"(?m)^ +\/\*(?:(?!\*\/|==UserStyle==|deno-fmt-ignore)[\s\S])*?\*\/\n")?;
-	template = comment_re.replace_all(&template, "").to_string();
+	if clear_comments {
+		let comment_re =
+			Regex::new(r"(?m)^ +\/\*(?:(?!\*\/|==UserStyle==|deno-fmt-ignore)[\s\S])*?\*\/\n")?;
+		template = comment_re.replace_all(&template, "").to_string();
+	}
 
 	fs::write(
 		target.join(PathBuf::from("catppuccin.user.less")),

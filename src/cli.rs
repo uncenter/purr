@@ -98,6 +98,9 @@ pub enum Template {
 		/// URL to the application
 		#[arg(long, value_parser = valid_url)]
 		url: Option<String>,
+
+		#[arg(long)]
+		clear_comments: bool,
 	},
 }
 
