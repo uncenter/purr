@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/uncenter/purr/compare/v1.1.0...v1.2.0) (2025-01-16)
+
+
+### Features
+
+* generic value cache support for whiskers statuses & stars ([#38](https://github.com/uncenter/purr/issues/38)) ([9b9753d](https://github.com/uncenter/purr/commit/9b9753dde5e6aa0e0801db21b97bdb3f1ca84e4f))
+* **init/userstyle:** gate comment removal behind explicit `--clear-comments` flag ([913a339](https://github.com/uncenter/purr/commit/913a3391eb3f8930aa058d4c3db9ee2ee738e4ee))
+
+
+### Bug Fixes
+
+* **init/userstyle:** new template url/path, improve comment regex ([9a41fdc](https://github.com/uncenter/purr/commit/9a41fdcc87be6a7da060e9e60605127411ab90bd))
+
 ## [1.1.0](https://github.com/uncenter/purr/compare/v1.0.1...v1.1.0) (2024-11-12)
 
 
