@@ -1,5 +1,3 @@
-use color_eyre::Result;
-
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 
@@ -8,7 +6,7 @@ use repositories::{
 	RepositoriesOrganizationRepositories, RepositoriesOrganizationRepositoriesNodes,
 };
 
-use crate::cache::Cache;
+use crate::cache::{Cache, CacheError};
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -39,7 +37,7 @@ pub fn fetch_repositories(
 pub fn fetch_all_repositories(
 	cache: &mut Cache,
 	token: &str,
-) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>> {
+) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>, GitHubError> {
 	cache.get_or("all-repositories", || {
 		let client = Client::builder()
 			.user_agent("catppuccin-purr")
@@ -70,7 +68,7 @@ pub fn fetch_all_repositories(
 	})
 }
 
-pub fn rest(path: &str, token: Option<String>) -> Result<reqwest::blocking::Response> {
+pub fn rest(path: &str, token: Option<String>) -> Result<reqwest::blocking::Response, GitHubError> {
 	let client = Client::new();
 	let request = client
 		.get(format!("https://api.github.com/{path}"))
@@ -96,7 +94,11 @@ pub struct CustomProperty {
 	pub value: String,
 }
 
-pub fn fetch_whiskers_status(cache: &mut Cache, repository: &str, token: String) -> Result<String> {
+pub fn fetch_whiskers_status(
+	cache: &mut Cache,
+	repository: &str,
+	token: String,
+) -> Result<String, GitHubError> {
 	let cache_key = format!("whiskers-{repository}");
 	if let Some(cached) = cache.get::<String>(&cache_key) {
 		return Ok(cached.to_string());
@@ -113,5 +115,13 @@ pub fn fetch_whiskers_status(cache: &mut Cache, repository: &str, token: String)
 		.find(|prop| prop.property_name == "whiskers")
 		.expect("whiskers custom property should exist on all repositories");
 
-	cache.save(&cache_key, property.value.clone())
+	cache.save(&cache_key, property.value.clone()).into()
+}
+
+#[derive(thiserror::Error, miette::Diagnostic, Debug)]
+pub enum GitHubError {
+	#[error("Failed to retrieve data from filesystem cache.")]
+	Cache(#[from] CacheError),
+	#[error("Request to GitHub API failed.")]
+	RequestFailed(#[from] reqwest::Error),
 }

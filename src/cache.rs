@@ -1,12 +1,5 @@
-use color_eyre::eyre::Result;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{
-	collections::HashMap,
-	fs,
-	io::{self, Write},
-	path::PathBuf,
-	time::SystemTime,
-};
+use std::{collections::HashMap, fs, io::Write, path::PathBuf, time::SystemTime};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Entry {
@@ -61,20 +54,21 @@ impl Cache {
 	}
 
 	/// Wrapper of the [`Cache::get`] function, accepting a closure for retrieving and then saving the value if the value is not present already or invalid.
-	pub fn get_or<T, F>(&mut self, key: &str, fetch: F) -> Result<T>
+	pub fn get_or<T, F, E>(&mut self, key: &str, fetch: F) -> Result<T, E>
 	where
 		T: Serialize + DeserializeOwned + Clone,
-		F: FnOnce() -> Result<T>,
+		F: FnOnce() -> Result<T, E>,
+		Result<T, E>: From<Result<T, CacheError>>,
 	{
 		if let Some(data) = self.get::<T>(key) {
 			return Ok(data);
 		}
 		let value = fetch()?;
-		self.save(key, value)
+		self.save(key, value).into()
 	}
 
 	/// Save a value under a key to the cache store, returning that same value.
-	pub fn save<T: Serialize>(&mut self, key: &str, value: T) -> Result<T> {
+	pub fn save<T: Serialize>(&mut self, key: &str, value: T) -> Result<T, CacheError> {
 		self.entries.insert(
 			key.to_string(),
 			Entry {
@@ -87,8 +81,19 @@ impl Cache {
 	}
 
 	/// Save the cache to the store path (specified at cache initialization).
-	fn save_to_file(&self) -> io::Result<()> {
+	fn save_to_file(&self) -> Result<(), CacheError> {
 		let mut file = fs::File::create(&self.path)?;
 		file.write_all(serde_json::to_string(&self.entries)?.as_bytes())
+			.into()
 	}
+}
+
+#[derive(thiserror::Error, miette::Diagnostic, Debug)]
+pub enum CacheError {
+	#[error(transparent)]
+	Serde(#[from] serde_json::Error),
+	#[error(transparent)]
+	Filesystem(#[from] std::io::Error),
+	#[error("unknown data store error")]
+	Unknown,
 }
