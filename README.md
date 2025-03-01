@@ -12,6 +12,15 @@ cargo install catppuccin-purr
 cargo install --git https://github.com/uncenter/purr.git
 ```
 
+### Arch
+
+[purr](https://aur.archlinux.org/packages/purr/) is available as an AUR package.
+It can be installed with an AUR helper (e.g. `paru`):
+
+```sh
+paru -S purr
+```
+
 ### Nix
 
 ```
