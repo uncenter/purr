@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use color_eyre::eyre::{eyre, Context, Result};
 use serde_json::Value;
 
@@ -17,7 +19,7 @@ pub fn query(
 	command: Option<Query>,
 	r#for: Option<String>,
 	count: bool,
-	get: Key,
+	get: Vec<Key>,
 	include_userstyles: bool,
 	only_userstyles: bool,
 ) -> Result<()> {
@@ -64,10 +66,16 @@ pub fn query(
 						matches
 					}
 				})
-				.map(|port| get_key(port, options.get))
+				.map(|port| {
+					options
+						.get
+						.iter()
+						.map(|&key| (key, get_key(port.clone(), key)))
+						.collect::<HashMap<_, _>>()
+				})
 				.collect::<Vec<_>>();
 
-			display_json_or_count(&result, options.count)?;
+			display_json_or_count(result, options.count)?;
 		}
 		Some(Query::Has {
 			name,
@@ -143,10 +151,16 @@ pub fn query(
 						matches
 					}
 				})
-				.map(|port| get_key(port, options.get))
+				.map(|port| {
+					options
+						.get
+						.iter()
+						.map(|&key| (key, get_key(port.clone(), key)))
+						.collect::<HashMap<_, _>>()
+				})
 				.collect::<Vec<_>>();
 
-			display_json_or_count(&result, options.count)?;
+			display_json_or_count(result, options.count)?;
 		}
 		Some(Query::Stars {
 			r#for,
@@ -242,7 +256,7 @@ pub fn query(
 						(found_true as f32 / (found_true + found_false) as f32) * 100.0
 					);
 				} else {
-					display_json_or_count(&result, count)?;
+					display_json_or_count(result, count)?;
 				}
 			}
 		}
@@ -252,7 +266,10 @@ pub fn query(
 					"{}",
 					serde_json::to_string_pretty(
 						data.filter(|port| port.0.to_lowercase() == r#for.to_lowercase())
-							.map(|port| get_key(port, get))
+							.map(|port| get
+								.iter()
+								.map(|&key| (key, get_key(port.clone(), key)))
+								.collect::<HashMap<_, _>>())
 							.collect::<Vec<_>>()
 							.first()
 							.ok_or_else(|| eyre!("no port with the name '{}'", r#for))?
@@ -261,7 +278,12 @@ pub fn query(
 				);
 			} else {
 				display_json_or_count(
-					&data.map(|port| get_key(port, get)).collect::<Vec<_>>(),
+					data.map(|port| {
+						get.iter()
+							.map(|&key| (key, get_key(port.clone(), key)))
+							.collect::<HashMap<_, _>>()
+					})
+					.collect::<Vec<_>>(),
 					count,
 				)?;
 			}
