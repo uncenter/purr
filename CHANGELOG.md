@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/uncenter/purr/compare/v1.2.0...v1.2.1) (2025-03-21)
+
+
+### Bug Fixes
+
+* **models:** remove categories field from ports data source, update categories list ([55653d1](https://github.com/uncenter/purr/commit/55653d170c13d584b36172be7d138dbcb99ce823))
+
 ## [1.2.0](https://github.com/uncenter/purr/compare/v1.1.0...v1.2.0) (2025-01-16)
 
 
