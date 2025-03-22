@@ -33,7 +33,7 @@ fn matches_current_maintainer(current_maintainers: &[Maintainer], by: &Option<St
 	}
 }
 
-fn display_json_or_count(result: &[Value], count: bool) -> Result<()> {
+fn display_json_or_count<T: serde::Serialize>(result: Vec<T>, count: bool) -> Result<()> {
 	println!(
 		"{}",
 		if count {
