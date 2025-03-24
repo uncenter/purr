@@ -33,8 +33,8 @@ pub enum Commands {
 		count: bool,
 
 		/// Extract a specific property each result
-		#[arg(short, long, value_enum, default_value_t)]
-		get: Key,
+		#[arg(short, long, value_enum, default_value = "identifier")]
+		get: Vec<Key>,
 
 		// See https://jwodder.github.io/kbits/posts/clap-bool-negate/.
 		// Cursed code to enable the correct relationship between `--userstyles` and `--no-userstyles`.
@@ -223,11 +223,14 @@ pub struct ExtraOptions<K: Send + Sync + Default + ValueEnum + 'static> {
 	pub count: bool,
 
 	/// Extract a specific property each result
-	#[arg(short, long, value_enum, default_value_t)]
-	pub get: K,
+	#[arg(short, long, value_enum, default_value = "identifier")]
+	pub get: Vec<K>,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Default)]
+#[derive(
+	Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Default, Hash, serde::Serialize,
+)]
+#[serde(rename_all = "kebab-case")]
 pub enum Key {
 	#[default]
 	Identifier,
@@ -243,7 +246,10 @@ pub enum Key {
 	PastMaintainers,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Default)]
+#[derive(
+	Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Default, Hash, serde::Serialize,
+)]
+#[serde(rename_all = "kebab-case")]
 pub enum UserstyleKey {
 	#[default]
 	Identifier,

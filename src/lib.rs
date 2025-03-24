@@ -33,7 +33,7 @@ fn matches_current_maintainer(current_maintainers: &[Maintainer], by: &Option<St
 	}
 }
 
-fn display_json_or_count(result: &[Value], count: bool) -> Result<()> {
+fn display_json_or_count<T: serde::Serialize>(result: Vec<T>, count: bool) -> Result<()> {
 	println!(
 		"{}",
 		if count {
@@ -57,23 +57,27 @@ fn is_booleanish_match(value: Option<String>, expected: &str) -> bool {
 }
 
 pub fn get_key(entry: (String, Port), key: Key) -> Value {
+	fn optional_string(value: Option<String>) -> Value {
+		value.map_or(Value::Null, Value::String)
+	}
+
 	match key {
 		Key::Identifier => Value::String(entry.0),
 		Key::Name => Value::String(entry.1.name),
 		Key::Categories => {
 			Value::Array(entry.1.categories.into_iter().map(Value::String).collect())
 		}
-		Key::Upstreamed => Value::Bool(entry.1.upstreamed.expect("upstreamed should exist")),
+		Key::Upstreamed => entry.1.upstreamed.map_or(Value::Null, Value::Bool),
 		Key::Platform => match entry.1.platform {
 			StringOrStrings::Single(platform) => Value::String(platform),
 			StringOrStrings::Multiple(platforms) => {
 				Value::Array(platforms.into_iter().map(Value::String).collect())
 			}
 		},
-		Key::Icon => Value::String(entry.1.icon.expect("icon should exist")),
+		Key::Icon => optional_string(entry.1.icon),
 		Key::Color => Value::String(entry.1.color),
-		Key::Alias => Value::String(entry.1.alias.expect("alias should exist")),
-		Key::Url => Value::String(entry.1.url.expect("url exist eixst")),
+		Key::Alias => optional_string(entry.1.alias),
+		Key::Url => optional_string(entry.1.url),
 		Key::CurrentMaintainers => Value::Array(
 			entry
 				.1
