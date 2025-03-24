@@ -8,7 +8,6 @@ use super::shared::{Maintainer, StringOrStrings};
 pub struct Root {
 	pub collaborators: Vec<Maintainer>,
 	pub ports: HashMap<String, Port>,
-	pub categories: Vec<Category>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -27,14 +26,6 @@ pub struct Port {
 	pub current_maintainers: Vec<Maintainer>,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub past_maintainers: Option<Vec<Maintainer>>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Category {
-	pub key: String,
-	pub name: String,
-	pub description: String,
-	pub emoji: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
