@@ -1,10 +1,10 @@
+use log::warn;
 use std::{fs, path::PathBuf};
 
-use catppuccin::Hsl;
 use color_eyre::{eyre::Result, owo_colors::OwoColorize};
-use log::warn;
-
 use fancy_regex::Regex;
+
+use catppuccin::Hsl;
 
 pub fn handle(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
 	let original: String = fs::read_to_string(&input)?;
@@ -166,7 +166,7 @@ fn hsl_to_vec(hsl: &Hsl) -> Vec<f64> {
 
 #[cfg(test)]
 mod tests {
-	use crate::whiskerify::{self, as_tera_expr};
+	use crate::cmd::whiskerify::{self, as_tera_expr};
 
 	#[test]
 	fn all_colors_rgb() {

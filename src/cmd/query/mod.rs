@@ -3,16 +3,14 @@ use std::collections::HashMap;
 use color_eyre::eyre::{eyre, Context, Result};
 use serde_json::Value;
 
-use crate::{
-	cache::Cache,
-	cli::{Key, Query, WhiskersCustomProperty},
-	github::{self, fetch_all_repositories, fetch_whiskers_status, RepositoryResponse},
-	models::{self, ports::Port, shared::StringOrStrings},
-};
+use crate::cache::Cache;
+use crate::cli::{Key, Query, WhiskersCustomProperty};
+use crate::github::{self, fetch_all_repositories, fetch_whiskers_status, RepositoryResponse};
+use crate::models::{self, ports::Port, shared::StringOrStrings};
+use crate::utils::fetch_yaml;
 
-use crate::{
-	display_json_or_count, fetch_yaml, get_key, is_booleanish_match, matches_current_maintainer,
-};
+mod utils;
+use utils::{display_json_or_count, get_key, is_booleanish_match, matches_current_maintainer};
 
 pub fn query(
 	cache: &mut Cache,

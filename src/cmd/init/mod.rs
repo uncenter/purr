@@ -4,16 +4,18 @@ use std::process::Command;
 use std::{env, fs, io};
 
 use color_eyre::eyre::{bail, Result};
-use convert_case::Casing;
 use fancy_regex::Regex;
-use inquire::validator::Validation;
-use inquire::{Confirm, MultiSelect, Select, Text};
 use url::Url;
 
+use convert_case::Casing;
+use inquire::validator::Validation;
+use inquire::{Confirm, MultiSelect, Select, Text};
+
 use crate::cache::Cache;
+use crate::github;
 use crate::models::shared::{StringOrStrings, CATEGORIES};
 use crate::models::userstyles::{Readme, Userstyle, UserstylesRoot};
-use crate::{fetch_text, github};
+use crate::utils::fetch_text;
 
 pub fn port(name: Option<String>, url: Option<String>, whiskers: Option<bool>) -> Result<()> {
 	let name = name.unwrap_or_else(|| {

@@ -1,12 +1,11 @@
+use std::collections::HashMap;
+use std::fs;
+use std::io::{self, Write};
+use std::path::PathBuf;
+use std::time::SystemTime;
+
 use color_eyre::eyre::Result;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{
-	collections::HashMap,
-	fs,
-	io::{self, Write},
-	path::PathBuf,
-	time::SystemTime,
-};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Entry {
