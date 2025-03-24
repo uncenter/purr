@@ -223,7 +223,7 @@ pub struct ExtraOptions<K: Send + Sync + Default + ValueEnum + 'static> {
 	pub count: bool,
 
 	/// Extract a specific property each result
-	#[arg(short, long, value_enum)]
+	#[arg(short, long, value_enum, default_value = "identifier")]
 	pub get: Vec<K>,
 }
 
