@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/uncenter/purr/compare/v1.2.1...v1.3.0) (2025-03-26)
+
+
+### Features
+
+* **query:** support extracting multiple properties at once ([#70](https://github.com/uncenter/purr/issues/70)) ([cc6b6ab](https://github.com/uncenter/purr/commit/cc6b6ab91226f63498a87831561329ad3e452603))
+
+
+### Bug Fixes
+
+* **query:** remove removed maintainer.name field ([39403c1](https://github.com/uncenter/purr/commit/39403c1d2f8c050a9b5f4a0d83fb952a8bc0ad37))
+
 ## [1.2.1](https://github.com/uncenter/purr/compare/v1.2.0...v1.2.1) (2025-03-21)
 
 
