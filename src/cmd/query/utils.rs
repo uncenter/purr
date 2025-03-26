@@ -45,40 +45,34 @@ pub fn is_booleanish_match(value: Option<String>, expected: &str) -> bool {
 		})
 }
 
-pub fn get_key(entry: (String, Port), key: Key) -> Value {
+pub fn get_key((identifier, port): (String, Port), key: Key) -> Value {
 	fn optional_string(value: Option<String>) -> Value {
 		value.map_or(Value::Null, Value::String)
 	}
 
 	match key {
-		Key::Identifier => Value::String(entry.0),
-		Key::Name => Value::String(entry.1.name),
-		Key::Categories => {
-			Value::Array(entry.1.categories.into_iter().map(Value::String).collect())
-		}
-		Key::Upstreamed => entry.1.upstreamed.map_or(Value::Null, Value::Bool),
-		Key::Platform => match entry.1.platform {
+		Key::Identifier => Value::String(identifier),
+		Key::Name => Value::String(port.name),
+		Key::Categories => Value::Array(port.categories.into_iter().map(Value::String).collect()),
+		Key::Upstreamed => port.upstreamed.map_or(Value::Null, Value::Bool),
+		Key::Platform => match port.platform {
 			StringOrStrings::Single(platform) => Value::String(platform),
 			StringOrStrings::Multiple(platforms) => {
 				Value::Array(platforms.into_iter().map(Value::String).collect())
 			}
 		},
-		Key::Icon => optional_string(entry.1.icon),
-		Key::Color => Value::String(entry.1.color),
-		Key::Alias => optional_string(entry.1.alias),
-		Key::Url => optional_string(entry.1.url),
+		Key::Icon => optional_string(port.icon),
+		Key::Color => Value::String(port.color),
+		Key::Alias => optional_string(port.alias),
+		Key::Url => optional_string(port.url),
 		Key::CurrentMaintainers => Value::Array(
-			entry
-				.1
-				.current_maintainers
+			port.current_maintainers
 				.into_iter()
 				.map(|m| json!({ "url": m.url }))
 				.collect(),
 		),
 		Key::PastMaintainers => Value::Array(
-			entry
-				.1
-				.past_maintainers
+			port.past_maintainers
 				.into_iter()
 				.flatten()
 				.map(|m| json!({ "url": m.url }))
