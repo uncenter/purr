@@ -17,10 +17,6 @@ pub fn matches_current_maintainer(current_maintainers: &[Maintainer], by: &Optio
 				.replace("https://github.com/", "")
 				.to_lowercase()
 				.contains(&by.to_lowercase())
-				|| match &maintainer.name {
-					Some(name) => name.to_lowercase().contains(&by.to_lowercase()),
-					None => false,
-				}
 		}),
 		None => !current_maintainers.is_empty(),
 	}
@@ -76,7 +72,7 @@ pub fn get_key(entry: (String, Port), key: Key) -> Value {
 				.1
 				.current_maintainers
 				.into_iter()
-				.map(|m| json!({ "name": m.name, "url": m.url }))
+				.map(|m| json!({ "url": m.url }))
 				.collect(),
 		),
 		Key::PastMaintainers => Value::Array(
@@ -85,7 +81,7 @@ pub fn get_key(entry: (String, Port), key: Key) -> Value {
 				.past_maintainers
 				.into_iter()
 				.flatten()
-				.map(|m| json!({ "name": m.name, "url": m.url }))
+				.map(|m| json!({ "url": m.url }))
 				.collect(),
 		),
 	}

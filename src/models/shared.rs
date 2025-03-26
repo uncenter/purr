@@ -55,7 +55,6 @@ pub const CATEGORIES: [&str; 35] = [
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Maintainer {
-	pub name: Option<String>,
 	pub url: String,
 }
 
