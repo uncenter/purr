@@ -39,7 +39,7 @@
             rustfmt
             rust-analyzer
           ];
-          inputsFrom = [ self.packages.${system}.nixpkgs-track ];
+          inputsFrom = [ self.packages.${system}.purr ];
           env = {
             OPENSSL_NO_VENDOR = 1;
             RUST_SRC_PATH = toString pkgs.rustPlatform.rustLibSrc;
