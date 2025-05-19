@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/uncenter/purr/compare/v1.3.0...v1.4.0) (2025-05-19)
+
+
+### Features
+
+* update ports and userstyles data models ([c29ab7c](https://github.com/uncenter/purr/commit/c29ab7c9622e70623f40f7007059ebc2ac764a31))
+
 ## [1.3.0](https://github.com/uncenter/purr/compare/v1.2.1...v1.3.0) (2025-03-26)
 
 
