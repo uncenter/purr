@@ -6,7 +6,7 @@ use serde_json::Value;
 use crate::cache::Cache;
 use crate::cli::{Key, Query, WhiskersCustomProperty};
 use crate::github::{self, fetch_all_repositories, fetch_whiskers_status, RepositoryResponse};
-use crate::models::{self, ports::Port, shared::StringOrStrings};
+use crate::models::{self, ports::Port};
 use crate::utils::fetch_yaml;
 
 mod utils;
@@ -102,10 +102,7 @@ pub fn query(
 						}
 					} && {
 						if let Some(platform) = &platform {
-							platform.iter().all(|p| match &port.1.platform {
-								StringOrStrings::Single(platform) => *platform == *p,
-								StringOrStrings::Multiple(platforms) => platforms.contains(p),
-							})
+							platform.iter().all(|p| port.1.platform.contains(p))
 						} else {
 							true
 						}

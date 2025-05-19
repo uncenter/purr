@@ -13,8 +13,8 @@ use inquire::{Confirm, MultiSelect, Select, Text};
 
 use crate::cache::Cache;
 use crate::github;
-use crate::models::shared::{StringOrStrings, CATEGORIES};
-use crate::models::userstyles::{Readme, Userstyle, UserstylesRoot};
+use crate::models::categories::CATEGORIES;
+use crate::models::userstyles::{Userstyle, UserstylesRoot};
 use crate::utils::fetch_text;
 
 pub fn port(name: Option<String>, url: Option<String>, whiskers: Option<bool>) -> Result<()> {
@@ -218,13 +218,13 @@ pub fn userstyle(
 	)?;
 
 	let metadata = Userstyle {
-		name: StringOrStrings::Single(name),
+		name,
 		categories,
 		icon,
 		color,
-		readme: Readme {
-			app_link: StringOrStrings::Single(url),
-		},
+		link: url,
+		note: None,
+		supports: None,
 		current_maintainers: vec![],
 		past_maintainers: None,
 	};

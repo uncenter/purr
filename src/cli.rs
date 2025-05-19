@@ -4,7 +4,7 @@ use clap::{arg, ArgAction, Args, Parser, Subcommand, ValueEnum};
 use color_eyre::owo_colors::OwoColorize;
 use url::Url;
 
-use crate::models::shared::CATEGORIES;
+use crate::models::categories::CATEGORIES;
 
 #[derive(Parser)]
 #[command(name = "purr", version, arg_required_else_help(true))]
