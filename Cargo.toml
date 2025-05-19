@@ -1,6 +1,6 @@
 [package]
 name = "catppuccin-purr"
-version = "1.3.0"
+version = "1.4.0"
 authors = ["uncenter <uncenter@uncenter.dev>"]
 license = "MIT"
 description = "Unoffical CLI for developing Catppuccin ports"
