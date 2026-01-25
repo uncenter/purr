@@ -19,12 +19,14 @@ pub struct UserstylesRoot {
 #[serde(rename_all = "kebab-case")]
 pub struct Userstyle {
 	pub name: String,
+	pub link: String,
 	pub categories: Vec<String>,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub icon: Option<String>,
 	pub color: String,
-	pub link: String,
+	#[serde(skip_serializing_if = "Option::is_none")]
 	pub note: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
 	pub supports: Option<HashMap<String, SupportedWebsite>>,
 	pub current_maintainers: Vec<String>,
 	#[serde(skip_serializing_if = "Option::is_none")]

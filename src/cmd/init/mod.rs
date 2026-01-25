@@ -219,10 +219,10 @@ pub fn userstyle(
 
 	let metadata = Userstyle {
 		name,
+		link: url,
 		categories,
 		icon,
 		color,
-		link: url,
 		note: None,
 		supports: None,
 		current_maintainers: vec![],
