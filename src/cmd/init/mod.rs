@@ -231,7 +231,7 @@ pub fn userstyle(
 	let mut bare = HashMap::new();
 	bare.insert(name_kebab, metadata);
 	println!(
-		"{}",
+		"scripts/userstyles.yml\n{}",
 		serde_yaml::to_string(&UserstylesRoot { userstyles: bare }).unwrap()
 	);
 
