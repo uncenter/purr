@@ -159,7 +159,7 @@ pub fn userstyle(
 				.mocha
 				.colors
 				.into_iter()
-				.filter(|c| c.accent)
+				.filter(|c| c.accent || c.identifier() == "text")
 				.map(catppuccin::Color::identifier)
 				.collect(),
 		)
