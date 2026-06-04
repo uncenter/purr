@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{arg, ArgAction, Args, Parser, Subcommand, ValueEnum};
+use clap::{ArgAction, Args, Parser, Subcommand, ValueEnum};
 use color_eyre::owo_colors::OwoColorize;
 use url::Url;
 
