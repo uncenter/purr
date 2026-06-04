@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.1](https://github.com/uncenter/purr/compare/v1.4.0...v1.4.1) (2026-06-04)
+
+
+### Bug Fixes
+
+* **init/userstyle:** allow text color ([ec4f0ec](https://github.com/uncenter/purr/commit/ec4f0ec90551118cd20029cbcedd1abde87e48a7))
+* **init/userstyle:** print userstyles.yml path before serialized content ([e264218](https://github.com/uncenter/purr/commit/e2642185231d36f84afd76ddf4afe8abdb19a54a))
+* **init/userstyle:** sort userstyles.yml properties canonically & skip empty fields ([794fdd0](https://github.com/uncenter/purr/commit/794fdd07a55e6e7d589f062e9e5d9a83c0ca9bf7))
+
 ## [1.4.0](https://github.com/uncenter/purr/compare/v1.3.0...v1.4.0) (2025-05-19)
 
 
