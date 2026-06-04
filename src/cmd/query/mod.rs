@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
+use cachecow::Cache;
+
 use color_eyre::eyre::{eyre, Context, Result};
 use serde_json::Value;
 
-use crate::cache::Cache;
 use crate::cli::{Key, Query, WhiskersCustomProperty};
 use crate::github::{self, fetch_all_repositories, fetch_whiskers_status, RepositoryResponse};
 use crate::models::{self, ports::Port};

@@ -8,7 +8,7 @@ use repositories::{
 	RepositoriesOrganizationRepositories, RepositoriesOrganizationRepositoriesNodes,
 };
 
-use crate::cache::Cache;
+use cachecow::Cache;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -40,7 +40,7 @@ pub fn fetch_all_repositories(
 	cache: &mut Cache,
 	token: &str,
 ) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>> {
-	cache.get_or("all-repositories", || {
+	Ok(cache.get_or("all-repositories", || -> Result<_> {
 		let client = Client::builder()
 			.user_agent("catppuccin-purr")
 			.default_headers(
@@ -67,7 +67,7 @@ pub fn fetch_all_repositories(
 		}
 
 		Ok(repositories)
-	})
+	})?)
 }
 
 pub fn rest(path: &str, token: Option<String>) -> Result<reqwest::blocking::Response> {
@@ -113,5 +113,5 @@ pub fn fetch_whiskers_status(cache: &mut Cache, repository: &str, token: String)
 		.find(|prop| prop.property_name == "whiskers")
 		.expect("whiskers custom property should exist on all repositories");
 
-	cache.save(&cache_key, property.value.clone())
+	Ok(cache.set(&cache_key, property.value.clone())?)
 }

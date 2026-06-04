@@ -1,10 +1,11 @@
+use cachecow::Cache;
+use std::time::Duration;
+
 use clap::Parser;
 use color_eyre::eyre::Result;
 use etcetera::{choose_base_strategy, BaseStrategy};
 
-use catppuccin_purr::{cache, cli, cmd};
-
-static ONE_DAY_IN_SECONDS: u64 = 24 * 60 * 60;
+use catppuccin_purr::{cli, cmd};
 
 fn main() -> Result<()> {
 	color_eyre::install()?;
@@ -14,14 +15,14 @@ fn main() -> Result<()> {
 
 	let args = cli::Cli::parse();
 
-	let mut cache = cache::Cache::new(
+	let mut cache = Cache::new(
 		choose_base_strategy()
 			.unwrap()
 			.cache_dir()
 			.join("purr/store.json"),
-		args.refresh,
-		ONE_DAY_IN_SECONDS,
-	);
+		Duration::from_secs(if args.refresh { 0 } else { 24 * 60 * 60 }),
+		cachecow::FlushPolicy::Auto,
+	)?;
 
 	match args.command {
 		cli::Commands::Query {

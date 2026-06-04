@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs, io};
 
+use cachecow::Cache;
+
 use color_eyre::eyre::{bail, Result};
 use fancy_regex::Regex;
 use url::Url;
@@ -11,7 +13,6 @@ use convert_case::Casing;
 use inquire::validator::Validation;
 use inquire::{Confirm, MultiSelect, Select, Text};
 
-use crate::cache::Cache;
 use crate::github;
 use crate::models::categories::CATEGORIES;
 use crate::models::userstyles::{Userstyle, UserstylesRoot};
