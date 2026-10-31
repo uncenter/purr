@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/uncenter/purr/compare/v1.4.1...v1.5.0) (2026-10-31)
+
+
+### Features
+
+* ask for a bug report when upstream data fails to parse from models ([1dc108b](https://github.com/uncenter/purr/commit/1dc108b280ba9e96f446f43679a1e05199e30acb))
+
+
+### Bug Fixes
+
+* **models:** remove stale `userstyle` category ([274bd4a](https://github.com/uncenter/purr/commit/274bd4a3f2f4f4578da35563691e2afb4d469cd1))
+
 ## [1.4.1](https://github.com/uncenter/purr/compare/v1.4.0...v1.4.1) (2026-06-04)
 
 
