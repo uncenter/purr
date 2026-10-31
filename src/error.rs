@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use miette::Diagnostic;
 use thiserror::Error;
+use url::Url;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -37,14 +38,15 @@ pub enum Error {
 	)]
 	PortNotFound(String),
 
+	#[error(transparent)]
+	#[diagnostic(transparent)]
+	OutdatedModel(#[from] OutdatedModel),
+
 	#[error("failed to serialize results")]
 	Serialize(#[from] serde_json::Error),
 
 	#[error(transparent)]
 	Io(#[from] std::io::Error),
-
-	#[error(transparent)]
-	Yaml(#[from] serde_yaml::Error),
 
 	#[error(transparent)]
 	Http(#[from] reqwest::Error),
@@ -63,4 +65,42 @@ pub enum Error {
 
 	#[error(transparent)]
 	HomeDir(#[from] user_dirs::HomeDirError),
+}
+
+/// Upstream data that doesn't match struct models is a bug, and not a user-facing issue.
+/// Ask users to report it instead, with a prefilled GitHub issue URL.
+#[derive(Debug, Error, Diagnostic)]
+#[error("failed to parse {url}")]
+#[diagnostic(
+	code(purr::bug::outdated_model),
+	url("{}", self.issue),
+	help("this is a bug in purr, as its models are out of date with the upstream data; please report it using the link above")
+)]
+pub struct OutdatedModel {
+	url: String,
+	#[source]
+	source: serde_yaml::Error,
+	issue: String,
+}
+
+impl OutdatedModel {
+	#[must_use]
+	pub fn new(url: &str, source: serde_yaml::Error) -> Self {
+		let title = format!("Failed to parse {}", url.rsplit('/').next().unwrap_or(url));
+		let body = format!(
+			"purr v{} could not parse <{url}>:\n\n```\n{source}\n```",
+			env!("CARGO_PKG_VERSION"),
+		);
+		let issue = Url::parse_with_params(
+			concat!(env!("CARGO_PKG_REPOSITORY"), "/issues/new"),
+			[("title", title.as_str()), ("body", body.as_str())],
+		)
+		.expect("issue URL should be valid");
+
+		Self {
+			url: url.to_string(),
+			source,
+			issue: issue.into(),
+		}
+	}
 }
