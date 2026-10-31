@@ -48,3 +48,6 @@ lto = true
 [lints.clippy]
 all = "warn"
 pedantic = "warn"
+
+[dev-dependencies]
+serde_ignored = "0.1.14"
