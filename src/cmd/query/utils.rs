@@ -1,7 +1,6 @@
-use color_eyre::eyre::{Context, Result};
 use serde_json::Value;
 
-use crate::{cli::Key, models::ports::Port};
+use crate::{cli::Key, error::Result, models::ports::Port};
 
 pub fn matches_current_maintainer(current_maintainers: &[String], by: &Option<String>) -> bool {
 	match &by {
@@ -18,7 +17,7 @@ pub fn display_json_or_count<T: serde::Serialize>(result: Vec<T>, count: bool) -
 		if count {
 			result.len().to_string()
 		} else {
-			serde_json::to_string_pretty(&result).context("Failed to serialize results")?
+			serde_json::to_string_pretty(&result)?
 		}
 	);
 

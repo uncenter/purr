@@ -2,10 +2,10 @@ use std::collections::HashMap;
 
 use cachecow::Cache;
 
-use color_eyre::eyre::{eyre, Context, Result};
 use serde_json::Value;
 
 use crate::cli::{Key, Query, WhiskersCustomProperty};
+use crate::error::{Error, Result};
 use crate::github::{self, fetch_all_repositories, fetch_whiskers_status, RepositoryResponse};
 use crate::models::{self, ports::Port};
 use crate::utils::fetch_yaml;
@@ -259,9 +259,8 @@ pub fn query(
 							.map(|port| extract_port_data(port, &get))
 							.collect::<Vec<_>>()
 							.first()
-							.ok_or_else(|| eyre!("no port with the name '{}'", r#for))?
-					)
-					.context("Failed to serialize results")?
+							.ok_or_else(|| Error::PortNotFound(r#for.clone()))?
+					)?
 				);
 			} else {
 				display_json_or_count(

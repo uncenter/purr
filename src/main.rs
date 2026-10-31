@@ -2,18 +2,19 @@ use cachecow::Cache;
 use std::time::Duration;
 
 use clap::Parser;
-use color_eyre::eyre::Result;
 
-use catppuccin_purr::{cli, cmd};
+use catppuccin_purr::{cli, cmd, error::Result};
 
-fn main() -> Result<()> {
-	color_eyre::install()?;
+fn main() -> miette::Result<()> {
+	miette::set_panic_hook();
 	pretty_env_logger::formatted_builder()
 		.filter_level(log::LevelFilter::Warn)
 		.init();
 
-	let args = cli::Cli::parse();
+	Ok(run(cli::Cli::parse())?)
+}
 
+fn run(args: cli::Cli) -> Result<()> {
 	let mut cache = Cache::new(
 		user_dirs::cache_dir()?.join("purr/store.json"),
 		Duration::from_secs(if args.refresh { 0 } else { 24 * 60 * 60 }),

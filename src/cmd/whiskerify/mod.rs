@@ -1,10 +1,12 @@
 use log::warn;
 use std::{fs, path::PathBuf};
 
-use color_eyre::{eyre::Result, owo_colors::OwoColorize};
 use fancy_regex::Regex;
+use owo_colors::OwoColorize;
 
 use catppuccin::Hsl;
+
+use crate::error::Result;
 
 pub fn handle(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
 	let original: String = fs::read_to_string(&input)?;

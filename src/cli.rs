@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{ArgAction, Args, Parser, Subcommand, ValueEnum};
-use color_eyre::owo_colors::OwoColorize;
+use owo_colors::OwoColorize;
 use url::Url;
 
 use crate::models::categories::CATEGORIES;

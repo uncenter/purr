@@ -5,7 +5,6 @@ use std::{env, fs, io};
 
 use cachecow::Cache;
 
-use color_eyre::eyre::{bail, Result};
 use fancy_regex::Regex;
 use url::Url;
 
@@ -13,6 +12,7 @@ use convert_case::Casing;
 use inquire::validator::Validation;
 use inquire::{Confirm, MultiSelect, Select, Text};
 
+use crate::error::{Error, Result};
 use crate::github;
 use crate::models::categories::CATEGORIES;
 use crate::models::userstyles::{Userstyle, UserstylesRoot};
@@ -43,7 +43,7 @@ pub fn port(name: Option<String>, url: Option<String>, whiskers: Option<bool>) -
 
 	let target = env::current_dir()?.join(PathBuf::from(&name_kebab));
 	if target.exists() {
-		bail!("Directory already exists",)
+		return Err(Error::DirectoryExists(target));
 	}
 	let response = github::rest(
 		&format!(
@@ -131,7 +131,7 @@ pub fn userstyle(
 ) -> Result<()> {
 	let cwd = env::current_dir()?;
 	if !cwd.join(PathBuf::from("scripts/userstyles.yml")).exists() {
-		bail!("Not in userstyles repository")
+		return Err(Error::NotInUserstylesRepository);
 	}
 
 	let name = name.unwrap_or_else(|| {
@@ -184,7 +184,7 @@ pub fn userstyle(
 
 	let target = cwd.join(PathBuf::from("styles/".to_string() + &name_kebab));
 	if target.exists() {
-		bail!("Userstyle already exists",)
+		return Err(Error::UserstyleExists(name_kebab));
 	}
 	fs::create_dir(&target)?;
 
@@ -209,7 +209,8 @@ pub fn userstyle(
 
 	if clear_comments {
 		let comment_re =
-			Regex::new(r"(?m)^ +\/\*(?:(?!\*\/|==UserStyle==|deno-fmt-ignore)[\s\S])*?\*\/\n")?;
+			Regex::new(r"(?m)^ +\/\*(?:(?!\*\/|==UserStyle==|deno-fmt-ignore)[\s\S])*?\*\/\n")
+				.expect("comment regex should be valid");
 		template = comment_re.replace_all(&template, "").to_string();
 	}
 

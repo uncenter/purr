@@ -1,4 +1,4 @@
-use color_eyre::Result;
+use crate::error::Result;
 
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
@@ -40,7 +40,7 @@ pub fn fetch_all_repositories(
 	cache: &mut Cache,
 	token: &str,
 ) -> Result<Vec<Option<RepositoriesOrganizationRepositoriesNodes>>> {
-	Ok(cache.get_or("all-repositories", || -> Result<_> {
+	cache.get_or("all-repositories", || {
 		let client = Client::builder()
 			.user_agent("catppuccin-purr")
 			.default_headers(
@@ -67,7 +67,7 @@ pub fn fetch_all_repositories(
 		}
 
 		Ok(repositories)
-	})?)
+	})
 }
 
 pub fn rest(path: &str, token: Option<String>) -> Result<reqwest::blocking::Response> {
