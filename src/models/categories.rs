@@ -6,7 +6,7 @@
 // 	pub emoji: String,
 // }
 
-pub const CATEGORIES: [&str; 38] = [
+pub const CATEGORIES: [&str; 37] = [
 	"3d_modelling",
 	"analytics",
 	"application_launcher",
@@ -42,7 +42,6 @@ pub const CATEGORIES: [&str; 38] = [
 	"system",
 	"terminal",
 	"translation_tool",
-	"userstyle",
 	"wiki",
 	"window_manager",
 ];
