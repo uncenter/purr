@@ -23,7 +23,6 @@ color-eyre = "0.6.3"
 convert_case = "0.6.0"
 css-colors = "1.0.1"
 csscolorparser = { version = "0.6.2", features = ["rgb"] }
-etcetera = "0.8.0"
 fancy-regex = "0.14.0"
 flate2 = "1.0.35"
 graphql_client = { version = "0.14.0", features = ["reqwest-blocking"] }
@@ -38,6 +37,7 @@ strsim = "0.11.1"
 strum = { version = "0.26.3", features = ["derive"] }
 tar = "0.4.43"
 url = "2.5.4"
+user_dirs = "0.2.0"
 
 [profile.release]
 strip = true

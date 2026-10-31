@@ -3,7 +3,6 @@ use std::time::Duration;
 
 use clap::Parser;
 use color_eyre::eyre::Result;
-use etcetera::{choose_base_strategy, BaseStrategy};
 
 use catppuccin_purr::{cli, cmd};
 
@@ -16,10 +15,7 @@ fn main() -> Result<()> {
 	let args = cli::Cli::parse();
 
 	let mut cache = Cache::new(
-		choose_base_strategy()
-			.unwrap()
-			.cache_dir()
-			.join("purr/store.json"),
+		user_dirs::cache_dir()?.join("purr/store.json"),
 		Duration::from_secs(if args.refresh { 0 } else { 24 * 60 * 60 }),
 		cachecow::FlushPolicy::Auto,
 	)?;

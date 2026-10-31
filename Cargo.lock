@@ -192,7 +192,6 @@ dependencies = [
  "convert_case",
  "css-colors",
  "csscolorparser",
- "etcetera",
  "fancy-regex",
  "flate2",
  "graphql_client",
@@ -207,6 +206,7 @@ dependencies = [
  "strum",
  "tar",
  "url",
+ "user_dirs",
 ]
 
 [[package]]
@@ -464,17 +464,6 @@ checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "etcetera"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "136d1b5283a1ab77bd9257427ffd09d8667ced0570b6f938942bc7568ed5b943"
-dependencies = [
- "cfg-if",
- "home",
- "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -2036,6 +2025,15 @@ dependencies = [
  "idna",
  "percent-encoding",
  "serde",
+]
+
+[[package]]
+name = "user_dirs"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25e0d5bff51f431ac0e51881aa83a00d96561878caca262c04157857a4b02083"
+dependencies = [
+ "home",
 ]
 
 [[package]]
